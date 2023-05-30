@@ -29,7 +29,11 @@ public class Alley {
 	public ControlDesk controldesk;
 
     public Alley( int numLanes ) {
-        controldesk = new ControlDesk( numLanes );
+		if(numLanes> 0){
+        	controldesk = new ControlDesk( numLanes );
+		} else {
+			throw new IllegalArgumentException("Number of lanes must be positive!");
+		}
     }
 
 	public ControlDesk getControlDesk() {
