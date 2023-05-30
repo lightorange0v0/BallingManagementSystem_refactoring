@@ -7,78 +7,71 @@
  */
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class EndGamePrompt {
 	private ButtonCommand command;
 	private JFrame win;
 	private JButton yesButton, noButton;
-
+	private JFrame endGameFrame;
 	private int result;
-
-	private String selectedNick, selectedMember;
 
 	public EndGamePrompt( String partyName ) {
 
-		result =0;
-		
-		win = new JFrame("Another Game for " + partyName + "?" );
-		win.getContentPane().setLayout(new BorderLayout());
-		((JPanel) win.getContentPane()).setOpaque(false);
+		result = 0;
+        
+        endGameFrame = new JFrame("Another Game for " + partyName + "?");
+        endGameFrame.getContentPane().setLayout(new BorderLayout());
+        ((JPanel) endGameFrame.getContentPane()).setOpaque(false);
 
-		JPanel colPanel = new JPanel();
-		colPanel.setLayout(new GridLayout( 2, 1 ));
+        JPanel colPanel = new JPanel();
+        colPanel.setLayout(new GridLayout(2, 1));
 
-		// Label Panel
-		JPanel labelPanel = new JPanel();
-		labelPanel.setLayout(new FlowLayout());
-		
-		JLabel message = new JLabel( "Party " + partyName 
-			+ " has finished bowling.\nWould they like to bowl another game?" );
+        // Label Panel
+        JPanel labelPanel = new JPanel();
+        labelPanel.setLayout(new FlowLayout());
+        
+        JLabel message = new JLabel("Party " + partyName + " has finished bowling.\nWould they like to bowl another game?");
+        labelPanel.add(message);
 
-		labelPanel.add( message );
+        // Button Panel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(1, 2));
 
-		// Button Panel
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(1, 2));
+        Insets buttonMargin = new Insets(4, 4, 4, 4);
 
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
-		
-		EndGamePromptClickEvent clickEvent = new EndGamePromptClickEvent(this);
+		EndGamePromptClickEvent listener = new EndGamePromptClickEvent();
 
-		yesButton = new JButton("Yes");
-		JPanel yesButtonPanel = new JPanel();
-		yesButtonPanel.setLayout(new FlowLayout());
-		yesButton.addActionListener(clickEvent);
-		yesButtonPanel.add(yesButton);
+        yesButton = createButton("Yes", listener);
+        noButton = createButton("No", listener);
 
-		noButton = new JButton("No");
-		JPanel noButtonPanel = new JPanel();
-		noButtonPanel.setLayout(new FlowLayout());
-		noButton.addActionListener(clickEvent);
-		noButtonPanel.add(noButton);
+        buttonPanel.setLayout(new GridLayout(1, 2));
+        buttonPanel.add(yesButton);
+        buttonPanel.add(noButton);
 
-		buttonPanel.add(yesButton);
-		buttonPanel.add(noButton);
+        // Clean up main panel
+        colPanel.add(labelPanel);
+        colPanel.add(buttonPanel);
 
-		// Clean up main panel
-		colPanel.add(labelPanel);
-		colPanel.add(buttonPanel);
+        endGameFrame.getContentPane().add("Center", colPanel);
 
-		win.getContentPane().add("Center", colPanel);
+        endGameFrame.pack();
 
-		win.pack();
-
-		// Center Window on Screen
-		Dimension screenSize = (Toolkit.getDefaultToolkit()).getScreenSize();
-		win.setLocation(
-			((screenSize.width) / 2) - ((win.getSize().width) / 2),
-			((screenSize.height) / 2) - ((win.getSize().height) / 2));
-		win.show();
+        // Center Window on Screen
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        endGameFrame.setLocation((screenSize.width / 2) - (endGameFrame.getSize().width / 2),
+                (screenSize.height / 2) - (endGameFrame.getSize().height / 2));
+        endGameFrame.setVisible(true);
 
 	}
-
+	private JButton createButton(String text, EndGamePromptClickEvent listener) {
+        JButton button = new JButton(text);
+        button.addActionListener(listener);
+        return button;
+    }
+	
 	public int getResult() {
 		while ( result == 0 ) {
 			try {
@@ -108,6 +101,18 @@ public class EndGamePrompt {
 	public void buttonPressed() {
         command.execute();
     }
+	public class EndGamePromptClickEvent implements ActionListener {
 
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(yesButton)) {		
+				setCommand(new AgainGameCommand(EndGamePrompt.this));
+			}
+			if (e.getSource().equals(noButton)) {		
+				setCommand(new EndGameCommand(EndGamePrompt.this));
+			}
+			buttonPressed();
+		}
+	}
+	
 }
 
