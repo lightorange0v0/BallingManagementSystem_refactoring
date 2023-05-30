@@ -82,7 +82,9 @@ public class EndGamePrompt {
 		}
 		return result;	
 	}
-	
+	public void setResult(int i) {
+		result = i;
+	}
 	public void distroy() {
 		win.hide();
 	}
