@@ -9,14 +9,9 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
 
-import java.util.*;
-import java.text.*;
-
-public class EndGamePrompt implements ActionListener {
-
+public class EndGamePrompt {
+	private ButtonCommand command;
 	private JFrame win;
 	private JButton yesButton, noButton;
 
@@ -49,17 +44,19 @@ public class EndGamePrompt implements ActionListener {
 		buttonPanel.setLayout(new GridLayout(1, 2));
 
 		Insets buttonMargin = new Insets(4, 4, 4, 4);
+		
+		EndGamePromptClickEvent clickEvent = new EndGamePromptClickEvent(this);
 
 		yesButton = new JButton("Yes");
 		JPanel yesButtonPanel = new JPanel();
 		yesButtonPanel.setLayout(new FlowLayout());
-		yesButton.addActionListener(this);
+		yesButton.addActionListener(clickEvent);
 		yesButtonPanel.add(yesButton);
 
 		noButton = new JButton("No");
 		JPanel noButtonPanel = new JPanel();
 		noButtonPanel.setLayout(new FlowLayout());
-		noButton.addActionListener(this);
+		noButton.addActionListener(clickEvent);
 		noButtonPanel.add(noButton);
 
 		buttonPanel.add(yesButton);
@@ -82,16 +79,6 @@ public class EndGamePrompt implements ActionListener {
 
 	}
 
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(yesButton)) {		
-			result=1;
-		}
-		if (e.getSource().equals(noButton)) {		
-			result=2;
-		}
-
-	}
-
 	public int getResult() {
 		while ( result == 0 ) {
 			try {
@@ -102,10 +89,25 @@ public class EndGamePrompt implements ActionListener {
 		}
 		return result;	
 	}
-	
+	public void setResult(int i) {
+		result = i;
+	}
 	public void distroy() {
 		win.hide();
 	}
-	
+	public JButton getYesButton() {
+		return yesButton;
+	}
+	public JButton getNoButton() {
+		return noButton;
+	}
+
+	public void setCommand(ButtonCommand command) {
+        this.command = command;
+    }
+	public void buttonPressed() {
+        command.execute();
+    }
+
 }
 
