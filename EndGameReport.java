@@ -15,8 +15,9 @@ import javax.swing.event.*;
 import java.util.*;
 import java.text.*;
 
-public class EndGameReport implements ActionListener, ListSelectionListener {
+public class EndGameReport {
 
+	private ButtonCommand command;
 	private JFrame win;
 	private JButton printButton, finished;
 	private JList memberList;
@@ -48,10 +49,11 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 		while (iter.hasNext()){
 			myVector.add( ((Bowler)iter.next()).getNick() );
 		}	
+		EndGameReportClickEvent listener = new EndGameReportClickEvent();
 		memberList = new JList(myVector);
 		memberList.setFixedCellWidth(120);
 		memberList.setVisibleRowCount(5);
-		memberList.addListSelectionListener(this);
+		memberList.addListSelectionListener(listener);
 		JScrollPane partyPane = new JScrollPane(memberList);
 		//        partyPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		partyPanel.add(partyPane);
@@ -68,13 +70,13 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 		printButton = new JButton("Print Report");
 		JPanel printButtonPanel = new JPanel();
 		printButtonPanel.setLayout(new FlowLayout());
-		printButton.addActionListener(this);
+		printButton.addActionListener(listener);
 		printButtonPanel.add(printButton);
 
 		finished = new JButton("Finished");
 		JPanel finishedPanel = new JPanel();
 		finishedPanel.setLayout(new FlowLayout());
-		finished.addActionListener(this);
+		finished.addActionListener(listener);
 		finishedPanel.add(finished);
 
 		buttonPanel.add(printButton);
@@ -97,22 +99,12 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 
 	}
 
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(printButton)) {		
-			//Add selected to the vector.
-			retVal.add(selectedMember);
-		}
-		if (e.getSource().equals(finished)) {		
-			win.hide();
-			result = 1;
-		}
-
-	}
-
-	public void valueChanged(ListSelectionEvent e) {
-		selectedMember =
-			((String) ((JList) e.getSource()).getSelectedValue());
-	}
+	public void setCommand(ButtonCommand command) {
+        this.command = command;
+    }
+	public void buttonPressed() {
+        command.execute();
+    }
 
 	public Vector getResult() {
 		while ( result == 0 ) {
@@ -126,9 +118,20 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 	}
 	
 	public void destroy() {
-		win.hide();
+		win.setVisible(false);
 	}
-
+	public String getSelectMember() {
+		return selectedMember;
+	}
+	public void setResultNumber(int i) {
+		result = i;
+	}
+	public JFrame getWin(){
+		return win;
+	}
+	public Vector getretVal(){
+		return retVal;
+	}
 	public static void main( String args[] ) {
 		Vector bowlers = new Vector();
 		for ( int i=0; i<4; i++ ) {
@@ -138,6 +141,22 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 		String partyName="wank";
 		EndGameReport e = new EndGameReport( partyName, party );
 	}
+	public class EndGameReportClickEvent implements ActionListener, ListSelectionListener {
 	
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(printButton)) {		
+				setCommand(new PrintGameCommand(EndGameReport.this));
+			}
+			if (e.getSource().equals(finished)) {	
+				setCommand(new FinishedGameCommand(EndGameReport.this));	
+				
+			}
+			buttonPressed();
+		}
+		public void valueChanged(ListSelectionEvent e) {
+			selectedMember =
+				((String) ((JList) e.getSource()).getSelectedValue());
+		}
+	}
 }
 
