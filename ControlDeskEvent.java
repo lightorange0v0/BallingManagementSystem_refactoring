@@ -18,7 +18,7 @@ import java.util.*;
 public class ControlDeskEvent {
 
 	/** A representation of the wait queue, containing party names */
-	private Vector partyQueue;
+	private Vector<Party> partyQueue;
 
     /**
      * Contstructor for the ControlDeskEvent
@@ -27,19 +27,18 @@ public class ControlDeskEvent {
      *
      */
 
-	public ControlDeskEvent( Vector partyQueue ) {
+	public ControlDeskEvent( Vector<Party> partyQueue ) {
 		this.partyQueue = partyQueue;
 	}
 
     /**
      * Accessor for partyQueue
-     * @param key the key of the vertex being looked for.
      *
      * @return a Vector of Strings representing the names of the parties in the wait queue
      *
      */
 
-	public Vector getPartyQueue() {
+	public Vector<Party> getPartyQueue() {
 		return partyQueue;
 	}
 
