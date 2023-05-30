@@ -86,7 +86,7 @@ public class EndGamePrompt {
 		result = i;
 	}
 	public void distroy() {
-		win.hide();
+		endGameFrame.setVisible(false);
 	}
 
 	public void setCommand(ButtonCommand command) {
