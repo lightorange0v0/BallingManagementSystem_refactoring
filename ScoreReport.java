@@ -13,8 +13,9 @@ public class ScoreReport {
 		String nick = bowler.getNick();
 		String full = bowler.getFullName();
 		Vector v = null;
+		ScoreHistoryFile shf = new ScoreHistoryFile();
 		try{
-			v = ScoreHistoryFile.getScores(nick);
+			v = shf.getScores(nick);
 		} catch (Exception e){System.err.println("Error: " + e);}
 		
 		Iterator scoreIt = v.iterator();
