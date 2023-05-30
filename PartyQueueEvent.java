@@ -18,7 +18,7 @@ import java.util.*;
 public class PartyQueueEvent {
 
 	/** A representation of the wait queue, containing party names */
-	private Vector<Party> partyQueue;
+	private Vector<String> partyQueue;
 
     /**
      * Contstructor for the ControlDeskEvent
@@ -27,7 +27,7 @@ public class PartyQueueEvent {
      *
      */
 
-	public PartyQueueEvent(Vector<Party> partyQueue ) {
+	public PartyQueueEvent(Vector<String> partyQueue ) {
 		this.partyQueue = partyQueue;
 	}
 
@@ -38,7 +38,7 @@ public class PartyQueueEvent {
      *
      */
 
-	public Vector<Party> getPartyQueue() {
+	public Vector<String> getPartyQueue() {
 		return partyQueue;
 	}
 
