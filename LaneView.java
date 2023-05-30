@@ -29,6 +29,7 @@ public class LaneView implements LaneObserver, ActionListener {
 
 	JButton maintenance;
 	Lane lane;
+	private ButtonCommand command;  // the Command instance for Command pattern
 
 	public LaneView(Lane lane, int laneNum) {
 
@@ -216,8 +217,19 @@ public class LaneView implements LaneObserver, ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(maintenance)) {
-			lane.pauseGame();
+			setCommand(new LaneViewMaintenanceCommand(this));
 		}
+		buttonPressed();
 	}
+
+	// The Invoker holds a command and can use it to call a method
+	public void setCommand(ButtonCommand command) {
+		this.command = command;
+	}
+	// Call the execute() method of the command
+	public void buttonPressed() {
+		command.execute();
+	}
+
 
 }
