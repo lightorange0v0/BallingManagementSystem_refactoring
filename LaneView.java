@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
+import java.util.List;
 
 public class LaneView implements LaneObserver, ActionListener {
 
@@ -190,34 +191,25 @@ public class LaneView implements LaneObserver, ActionListener {
 		}
 	}
 
-	private void updateBallScores(LaneEvent le, int k){ // 라벨 담당
-		for (int i = 0; i < 21; i++) {
-			if (((int[]) ((HashMap) le.getScore())
-					.get(bowlers.get(k)))[i]
-					!= -1)
-				if (((int[]) ((HashMap) le.getScore())
-						.get(bowlers.get(k)))[i]
-						== 10
-						&& (i % 2 == 0 || i == 19))
-					ballLabel[k][i].setText("X");
-				else if (
-						i > 0
-								&& ((int[]) ((HashMap) le.getScore())
-								.get(bowlers.get(k)))[i]
-								+ ((int[]) ((HashMap) le.getScore())
-								.get(bowlers.get(k)))[i
-								- 1]
-								== 10
-								&& i % 2 == 1)
-					ballLabel[k][i].setText("/");
-				else if ( ((int[])((HashMap) le.getScore()).get(bowlers.get(k)))[i] == -2 ){
 
-					ballLabel[k][i].setText("F");
-				} else
-					ballLabel[k][i].setText(
-							(new Integer(((int[]) ((HashMap) le.getScore())
-									.get(bowlers.get(k)))[i]))
-									.toString());
+	private void updateBallScores(LaneEvent le, int k){ // 점수에 대해서 전략 패턴 적용 => 추후 다른 점수 규칙 도입에 용
+		List<ScoringStrategy> strategies = Arrays.asList(
+				new StrikeScoringStrategy(),
+				new SpareScoringStrategy(),
+				new FoulScoringStrategy(),
+				new DefaultScoringStrategy());
+
+		for (int i = 0; i < 21; i++) {
+			int[] bowlerScores = ((HashMap<String, int[]>) le.getScore()).get(bowlers.get(k));
+			if (bowlerScores[i] != -1) {
+				for (ScoringStrategy strategy : strategies) { // 4가지 유형 중 하나임.
+					String scoreSymbol = strategy.getScoreSymbol(bowlerScores, i);
+					if (scoreSymbol != null) {
+						ballLabel[k][i].setText(scoreSymbol);
+						break;
+					}
+				}
+			}
 		}
 	}
 
