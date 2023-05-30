@@ -15,6 +15,6 @@
 
 public interface ControlDeskObserver {
 
-	public void receiveControlDeskEvent(ControlDeskEvent ce);
+	public void receiveControlDeskEvent(PatyQueueEvent pe);
 
 }

@@ -17,7 +17,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
 
 import java.util.*;
 
@@ -170,11 +169,11 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 	/**
 	 * Receive a broadcast from a ControlDesk
 	 *
-	 * @param ce	the ControlDeskEvent that triggered the handler
+	 * @param pe	the ControlDeskEvent that triggered the handler
 	 *
 	 */
 
-	public void receiveControlDeskEvent(ControlDeskEvent ce) {
-		partyList.setListData(((Vector) ce.getPartyQueue()));
+	public void receiveControlDeskEvent(PatyQueueEvent pe) {
+		partyList.setListData(pe.getPartyQueue());
 	}
 }
