@@ -67,10 +67,10 @@ class ControlDesk extends Thread {
 
 	public ControlDesk(int numLanes) {
 		this.numLanes = numLanes;
-		lanes = new HashSet(numLanes);
+		lanes = new HashSet<>(numLanes);
 		partyQueue = new Queue();
 
-		subscribers = new Vector();
+		subscribers = new Vector<>();
 
 		for (int i = 0; i < numLanes; i++) {
 			lanes.add(new Lane());
@@ -113,8 +113,6 @@ class ControlDesk extends Thread {
 
 			patron = BowlerFile.getBowlerInfo(nickName);
 
-		} catch (FileNotFoundException e) {
-			System.err.println("Error..." + e);
 		} catch (IOException e) {
 			System.err.println("Error..." + e);
 		}
@@ -133,7 +131,7 @@ class ControlDesk extends Thread {
 		while (it.hasNext() && partyQueue.hasMoreElements()) {
 			Lane curLane = it.next();
 
-			if (curLane.isPartyAssigned() == false) {
+			if (!curLane.isPartyAssigned()) {
 				System.out.println("ok... assigning this party");
 				curLane.assignParty(((Party) partyQueue.next()));
 			}
@@ -156,9 +154,9 @@ class ControlDesk extends Thread {
      */
 
 	public void addPartyQueue(Vector<String> partyNicks) {
-		Vector<Bowler> partyBowlers = new Vector();
-		for (int i = 0; i < partyNicks.size(); i++) {
-			Bowler newBowler = registerPatron((partyNicks.get(i)));
+		Vector<Bowler> partyBowlers = new Vector<>();
+		for (String partyNick : partyNicks) {
+			Bowler newBowler = registerPatron(partyNick);
 			partyBowlers.add(newBowler);
 		}
 		Party newParty = new Party(partyBowlers);
@@ -174,7 +172,7 @@ class ControlDesk extends Thread {
      */
 
 	public Vector<String> getPartyQueue() {
-		Vector<String> displayPartyQueue = new Vector();
+		Vector<String> displayPartyQueue = new Vector<>();
 		for ( int i=0; i < ( partyQueue.asVector()).size(); i++ ) {
 			String nextParty =
 				((Bowler) ( ((Party) partyQueue.asVector().get( i ) ).getMembers())
