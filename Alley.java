@@ -26,7 +26,7 @@
  */
 
 public class Alley {
-	public ControlDesk controldesk;
+	private ControlDesk controldesk;
 
     public Alley( int numLanes ) {
 		if(numLanes> 0){
