@@ -46,14 +46,15 @@ import java.io.*;
 class ControlDesk extends Thread {
 	private static final int SLEEPMS = 250;
 
-	private BowlerRegistrationManager registrationManager;
+	/** The collection of Lanes */
+	private HashSet<Lane> lanes;
 
-	private PartyQueueManager partyQueueManager;
+	/** The party wait queue */
+	private Queue partyQueue;
 
-	private LaneManager laneManager;
-
-	private ScoreManager scoreManager;
-
+	/** The number of lanes represented */
+	private int numLanes;
+	
 	/** The collection of subscribers */
 	private Vector<ControlDeskObserver> subscribers;
 
@@ -65,13 +66,16 @@ class ControlDesk extends Thread {
      */
 
 	public ControlDesk(int numLanes) {
-		registrationManager = new BowlerRegistrationManager(this);
-		partyQueueManager = new PartyQueueManager(this);
-		laneManager = new LaneManager(this, numLanes);
-		scoreManager = new ScoreManager(this);
+		this.numLanes = numLanes;
+		lanes = new HashSet<>(numLanes);
+		partyQueue = new Queue();
 
 		subscribers = new Vector<>();
 
+		for (int i = 0; i < numLanes; i++) {
+			lanes.add(new Lane());
+		}
+		
 		this.start();
 
 	}
@@ -102,14 +106,19 @@ class ControlDesk extends Thread {
      */
 
 	private Bowler registerPatron(String nickName) {
-		return registrationManager.registerPatron(nickName);
-	}
+		Bowler patron = null;
 
-	//PartyQueueManager에서 사용하기 위한 public 메소드
-	public Bowler registerBowler(String nickName) {
-		return registerPatron(nickName);
-	}
+		try {
+			// only one patron / nick.... no dupes, no checks
 
+			patron = BowlerFile.getBowlerInfo(nickName);
+
+		} catch (IOException e) {
+			System.err.println("Error..." + e);
+		}
+
+		return patron;
+	}
 
     /**
      * Iterate through the available lanes and assign the paties in the wait queue if lanes are available.
@@ -117,7 +126,17 @@ class ControlDesk extends Thread {
      */
 
 	public void assignLane() {
-		laneManager.assignLane();
+		Iterator<Lane> it = lanes.iterator();
+
+		while (it.hasNext() && partyQueue.hasMoreElements()) {
+			Lane curLane = it.next();
+
+			if (!curLane.isPartyAssigned()) {
+				System.out.println("ok... assigning this party");
+				curLane.assignParty(((Party) partyQueue.next()));
+			}
+		}
+		publish(new PartyQueueEvent(getPartyQueue()));
 	}
 
     /**
@@ -125,7 +144,6 @@ class ControlDesk extends Thread {
 
 	public void viewScores(Lane ln) {
 		// TODO: attach a LaneScoreView object to that lane
-		scoreManager.viewScores(ln);
 	}
 
     /**
@@ -136,7 +154,14 @@ class ControlDesk extends Thread {
      */
 
 	public void addPartyQueue(Vector<String> partyNicks) {
-		partyQueueManager.addPartyQueue(partyNicks);
+		Vector<Bowler> partyBowlers = new Vector<>();
+		for (String partyNick : partyNicks) {
+			Bowler newBowler = registerPatron(partyNick);
+			partyBowlers.add(newBowler);
+		}
+		Party newParty = new Party(partyBowlers);
+		partyQueue.add(newParty);
+		publish(new PartyQueueEvent(getPartyQueue()));
 	}
 
     /**
@@ -147,18 +172,26 @@ class ControlDesk extends Thread {
      */
 
 	public Vector<String> getPartyQueue() {
-		return partyQueueManager.getPartyQueue();
+		Vector<String> displayPartyQueue = new Vector<>();
+		for ( int i=0; i < ( partyQueue.asVector()).size(); i++ ) {
+			String nextParty =
+				((Bowler) ( ((Party) partyQueue.asVector().get( i ) ).getMembers())
+					.get(0))
+					.getNickName() + "'s Party";
+			displayPartyQueue.addElement(nextParty);
+		}
+		return displayPartyQueue;
 	}
 
     /**
      * Accessor for the number of lanes represented by the ControlDesk
-     *
+     * 
      * @return an int containing the number of lanes represented
      *
      */
 
 	public int getNumLanes() {
-		return laneManager.getNumLanes();
+		return numLanes;
 	}
 
     /**
@@ -191,16 +224,12 @@ class ControlDesk extends Thread {
 
     /**
      * Accessor method for lanes
-     *
+     * 
      * @return a HashSet of Lanes
      *
      */
 
 	public HashSet<Lane> getLanes() {
-		return laneManager.getLanes();
-	}
-
-	public Queue getWaitQueue(){
-		return partyQueueManager.getWaitQueue();
+		return lanes;
 	}
 }
