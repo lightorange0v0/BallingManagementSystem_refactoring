@@ -23,7 +23,6 @@ public class EndGameReport {
 	private JList memberList;
 	private Vector myVector;
 	private Vector retVal;
-
 	private int result;
 
 	private String selectedMember;
@@ -55,29 +54,13 @@ public class EndGameReport {
 		memberList.setVisibleRowCount(5);
 		memberList.addListSelectionListener(listener);
 		JScrollPane partyPane = new JScrollPane(memberList);
-		//        partyPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		partyPanel.add(partyPane);
-
-		partyPanel.add( memberList );
-
-		// Button Panel
-		// Button Panel
+		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(2, 1));
 
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
-
-		printButton = new JButton("Print Report");
-		JPanel printButtonPanel = new JPanel();
-		printButtonPanel.setLayout(new FlowLayout());
-		printButton.addActionListener(listener);
-		printButtonPanel.add(printButton);
-
-		finished = new JButton("Finished");
-		JPanel finishedPanel = new JPanel();
-		finishedPanel.setLayout(new FlowLayout());
-		finished.addActionListener(listener);
-		finishedPanel.add(finished);
+		printButton = createButton("Print Report", listener);
+		finished = createButton("Finished", listener);
 
 		buttonPanel.add(printButton);
 		buttonPanel.add(finished);
@@ -95,10 +78,14 @@ public class EndGameReport {
 		win.setLocation(
 			((screenSize.width) / 2) - ((win.getSize().width) / 2),
 			((screenSize.height) / 2) - ((win.getSize().height) / 2));
-		win.show();
+		win.setVisible(true);
 
 	}
-
+	private JButton createButton(String text, EndGameReportClickEvent listener) {
+        JButton button = new JButton(text);
+        button.addActionListener(listener);
+        return button;
+    }
 	public void setCommand(ButtonCommand command) {
         this.command = command;
     }
@@ -106,7 +93,7 @@ public class EndGameReport {
         command.execute();
     }
 
-	public Vector getResult() {
+	public Vector waitForResult() {
 		while ( result == 0 ) {
 			try {
 				Thread.sleep(10);
