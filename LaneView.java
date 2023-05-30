@@ -122,83 +122,105 @@ public class LaneView implements LaneObserver, ActionListener {
 		return panel;
 	}
 
-	public void receiveLaneEvent(LaneEvent le) {
+	public void receiveLaneEvent(LaneEvent le) { // 레인 이벤트를 처리하는 메소드 리팩토링
 		if (lane.isPartyAssigned()) {
 			int numBowlers = le.getParty().getMembers().size();
-			while (!initDone) {
-				//System.out.println("chillin' here.");
-				try {
-					Thread.sleep(1);
-				} catch (Exception e) {
-				}
-			}
+			waitDoSleep();
 
-			if (le.getFrameNum() == 1
-				&& le.getBall() == 0
-				&& le.getIndex() == 0) {
-				System.out.println("Making the frame.");
-				cpanel.removeAll();
-				cpanel.add(makeFrame(le.getParty()), "Center");
-
-				// Button Panel
-				JPanel buttonPanel = new JPanel();
-				buttonPanel.setLayout(new FlowLayout());
-
-				Insets buttonMargin = new Insets(4, 4, 4, 4);
-
-				maintenance = new JButton("Maintenance Call");
-				JPanel maintenancePanel = new JPanel();
-				maintenancePanel.setLayout(new FlowLayout());
-				maintenance.addActionListener(this);
-				maintenancePanel.add(maintenance);
-
-				buttonPanel.add(maintenancePanel);
-
-				cpanel.add(buttonPanel, "South");
-
-				frame.pack();
-
+			if (isFirstFrameFirstBall(le)) {
+				setupFrame(le);
 			}
 
 			int[][] lescores = le.getCumulScore();
-			for (int k = 0; k < numBowlers; k++) {
-				for (int i = 0; i <= le.getFrameNum() - 1; i++) {
-					if (lescores[k][i] != 0)
-						scoreLabel[k][i].setText(
-							(new Integer(lescores[k][i])).toString());
-				}
-				for (int i = 0; i < 21; i++) {
-					if (((int[]) ((HashMap) le.getScore())
-						.get(bowlers.get(k)))[i]
-						!= -1)
-						if (((int[]) ((HashMap) le.getScore())
-							.get(bowlers.get(k)))[i]
-							== 10
-							&& (i % 2 == 0 || i == 19))
-							ballLabel[k][i].setText("X");
-						else if (
-							i > 0
-								&& ((int[]) ((HashMap) le.getScore())
-									.get(bowlers.get(k)))[i]
-									+ ((int[]) ((HashMap) le.getScore())
-										.get(bowlers.get(k)))[i
-									- 1]
-									== 10
-								&& i % 2 == 1)
-							ballLabel[k][i].setText("/");
-						else if ( ((int[])((HashMap) le.getScore()).get(bowlers.get(k)))[i] == -2 ){
-							
-							ballLabel[k][i].setText("F");
-						} else
-							ballLabel[k][i].setText(
-								(new Integer(((int[]) ((HashMap) le.getScore())
-									.get(bowlers.get(k)))[i]))
-									.toString());
-				}
-			}
-
+			updateScoreLabels(numBowlers, lescores, le);
 		}
 	}
+
+
+	private void waitDoSleep(){ // 초기화 대기 메소드
+		while (!initDone) {
+			//System.out.println("chillin' here.");
+			try {
+				Thread.sleep(1);
+			} catch (Exception e) {
+			}
+		}
+	}
+
+	private boolean isFirstFrameFirstBall(LaneEvent le) { // 첫번째 프레임의 시작인지 확인 메소드
+		return le.getFrameNum() == 1 && le.getBall() == 0 && le.getIndex() == 0;
+	}
+
+	private void setupFrame(LaneEvent le){ // 프레임을 초기화하는 메소드
+		System.out.println("Making the frame.");
+		cpanel.removeAll();
+		cpanel.add(makeFrame(le.getParty()), "Center");
+
+		// Button Panel
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new FlowLayout());
+
+		Insets buttonMargin = new Insets(4, 4, 4, 4);
+
+		maintenance = new JButton("Maintenance Call");
+		JPanel maintenancePanel = new JPanel();
+		maintenancePanel.setLayout(new FlowLayout());
+		maintenance.addActionListener(this);
+		maintenancePanel.add(maintenance);
+
+		buttonPanel.add(maintenancePanel);
+
+		cpanel.add(buttonPanel, "South");
+
+		frame.pack();
+	}
+
+
+	private void updateScoreLabels(int numBowlers, int[][] lescores, LaneEvent le){ // 점수와 라벨을 업데이트
+		for (int k = 0; k < numBowlers; k++) {
+			updateCumlativeScores(lescores, le.getFrameNum(), k);
+			updateBallScores(le, k);
+		}
+	}
+	private void updateCumlativeScores(int[][] lescores, int frameNum, int k){ // 누적 점수 업데이트 메소드
+		for (int i = 0; i <= frameNum - 1; i++) {
+			if (lescores[k][i] != 0)
+				scoreLabel[k][i].setText(
+						(new Integer(lescores[k][i])).toString());
+		}
+	}
+
+	private void updateBallScores(LaneEvent le, int k){ // 라벨 담당
+		for (int i = 0; i < 21; i++) {
+			if (((int[]) ((HashMap) le.getScore())
+					.get(bowlers.get(k)))[i]
+					!= -1)
+				if (((int[]) ((HashMap) le.getScore())
+						.get(bowlers.get(k)))[i]
+						== 10
+						&& (i % 2 == 0 || i == 19))
+					ballLabel[k][i].setText("X");
+				else if (
+						i > 0
+								&& ((int[]) ((HashMap) le.getScore())
+								.get(bowlers.get(k)))[i]
+								+ ((int[]) ((HashMap) le.getScore())
+								.get(bowlers.get(k)))[i
+								- 1]
+								== 10
+								&& i % 2 == 1)
+					ballLabel[k][i].setText("/");
+				else if ( ((int[])((HashMap) le.getScore()).get(bowlers.get(k)))[i] == -2 ){
+
+					ballLabel[k][i].setText("F");
+				} else
+					ballLabel[k][i].setText(
+							(new Integer(((int[]) ((HashMap) le.getScore())
+									.get(bowlers.get(k)))[i]))
+									.toString());
+		}
+	}
+
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(maintenance)) {
