@@ -11,7 +11,7 @@ import java.io.*;
 
 public class ScoreHistoryFile implements ScoreHistoryReader, ScoreHistoryWriter {
 
-	private static String SCOREHISTORY_DAT = "/Users/yeonjoo/Desktop/pattern_team/src/SCOREHISTORY.DAT";
+	private static String SCOREHISTORY_DAT = "/Users/yeonjoo/Desktop/pattern_team/BallingManagementSystem_refactoring/SCOREHISTORY.DAT";
 
 	public void addScore(String nick, String date, String score)
 		throws IOException, FileNotFoundException {
