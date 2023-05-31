@@ -216,7 +216,8 @@ public class Lane extends Thread implements PinsetterObserver {
 						try{
 						Date date = new Date();
 						String dateString = "" + date.getHours() + ":" + date.getMinutes() + " " + date.getMonth() + "/" + date.getDay() + "/" + (date.getYear() + 1900);
-						ScoreHistoryFile.addScore(currentThrower.getNick(), dateString, new Integer(cumulScores[bowlIndex][9]).toString());
+						ScoreHistoryFile shf = new ScoreHistoryFile();
+						shf.addScore(currentThrower.getNick(), dateString, new Integer(cumulScores[bowlIndex][9]).toString());
 						} catch (Exception e) {System.err.println("Exception in addScore. "+ e );} 
 					}
 
@@ -250,7 +251,7 @@ public class Lane extends Thread implements PinsetterObserver {
 				} else if (result == 2) {// no, dont want to play another game
 					Vector printVector;	
 					EndGameReport egr = new EndGameReport( ((Bowler)party.getMembers().get(0)).getNickName() + "'s Party", party);
-					printVector = egr.getResult();
+					printVector = egr.waitForResult();
 					partyAssigned = false;
 					Iterator scoreIt = party.getMembers().iterator();
 					party = null;
@@ -261,13 +262,15 @@ public class Lane extends Thread implements PinsetterObserver {
 					int myIndex = 0;
 					while (scoreIt.hasNext()){
 						Bowler thisBowler = (Bowler)scoreIt.next();
-						ScoreReport sr = new ScoreReport( thisBowler, finalScores[myIndex++], gameNumber );
-						sr.sendEmail(thisBowler.getEmail());
+						ScoreReport sr = new ScoreReport( thisBowler, finalScores[myIndex++], gameNumber);
+						sr.setSender( new EmailReportSender());
+						sr.sendTo(thisBowler.getEmail());
 						Iterator printIt = printVector.iterator();
 						while (printIt.hasNext()){
 							if (thisBowler.getNick() == (String)printIt.next()){
 								System.out.println("Printing " + thisBowler.getNick());
-								sr.sendPrintout();
+								sr.setSender(new PrintReportSender());
+								sr.sendTo("Printer");
 							}
 						}
 
