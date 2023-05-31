@@ -44,7 +44,6 @@ import java.util.*;
 import java.io.*;
 
 class ControlDesk extends Thread {
-
 	/** The collection of Lanes */
 	private HashSet lanes;
 
@@ -110,7 +109,7 @@ class ControlDesk extends Thread {
 		try {
 			// only one patron / nick.... no dupes, no checks
 
-			patron = BowlerFile.getBowlerInfo(nickName);
+			patron = BowlerFile.getInstance().getBowlerInfo(nickName);
 
 		} catch (FileNotFoundException e) {
 			System.err.println("Error..." + e);
