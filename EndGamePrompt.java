@@ -15,16 +15,15 @@ public class EndGamePrompt {
 	private ButtonCommand command;
 	private JFrame win;
 	private JButton yesButton, noButton;
-	private JFrame endGameFrame;
 	private int result;
 
 	public EndGamePrompt( String partyName ) {
 
 		result = 0;
         
-        endGameFrame = new JFrame("Another Game for " + partyName + "?");
-        endGameFrame.getContentPane().setLayout(new BorderLayout());
-        ((JPanel) endGameFrame.getContentPane()).setOpaque(false);
+        win = new JFrame("Another Game for " + partyName + "?");
+        win.getContentPane().setLayout(new BorderLayout());
+        ((JPanel) win.getContentPane()).setOpaque(false);
 
         JPanel colPanel = new JPanel();
         colPanel.setLayout(new GridLayout(2, 1));
@@ -47,7 +46,6 @@ public class EndGamePrompt {
         yesButton = createButton("Yes", listener);
         noButton = createButton("No", listener);
 
-        buttonPanel.setLayout(new GridLayout(1, 2));
         buttonPanel.add(yesButton);
         buttonPanel.add(noButton);
 
@@ -55,16 +53,15 @@ public class EndGamePrompt {
         colPanel.add(labelPanel);
         colPanel.add(buttonPanel);
 
-        endGameFrame.getContentPane().add("Center", colPanel);
+        win.getContentPane().add("Center", colPanel);
 
-        endGameFrame.pack();
+        win.pack();
 
         // Center Window on Screen
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        endGameFrame.setLocation((screenSize.width / 2) - (endGameFrame.getSize().width / 2),
-                (screenSize.height / 2) - (endGameFrame.getSize().height / 2));
-        endGameFrame.setVisible(true);
-
+        win.setLocation((screenSize.width / 2) - (win.getSize().width / 2),
+                (screenSize.height / 2) - (win.getSize().height / 2));
+				win.setVisible(true);
 	}
 	private JButton createButton(String text, EndGamePromptClickEvent listener) {
         JButton button = new JButton(text);
@@ -86,7 +83,7 @@ public class EndGamePrompt {
 		result = i;
 	}
 	public void distroy() {
-		endGameFrame.setVisible(false);
+		win.setVisible(false);
 	}
 
 	public void setCommand(ButtonCommand command) {
