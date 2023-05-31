@@ -11,18 +11,17 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
-
 import java.util.*;
-import java.text.*;
 
-public class EndGameReport implements ActionListener, ListSelectionListener {
 
+public class EndGameReport {
+
+	private ButtonCommand command;
 	private JFrame win;
 	private JButton printButton, finished;
 	private JList memberList;
 	private Vector myVector;
 	private Vector retVal;
-
 	private int result;
 
 	private String selectedMember;
@@ -48,34 +47,19 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 		while (iter.hasNext()){
 			myVector.add( ((Bowler)iter.next()).getNick() );
 		}	
+		EndGameReportClickEvent listener = new EndGameReportClickEvent();
 		memberList = new JList(myVector);
 		memberList.setFixedCellWidth(120);
 		memberList.setVisibleRowCount(5);
-		memberList.addListSelectionListener(this);
+		memberList.addListSelectionListener(listener);
 		JScrollPane partyPane = new JScrollPane(memberList);
-		//        partyPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		partyPanel.add(partyPane);
-
-		partyPanel.add( memberList );
-
-		// Button Panel
-		// Button Panel
+		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(2, 1));
 
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
-
-		printButton = new JButton("Print Report");
-		JPanel printButtonPanel = new JPanel();
-		printButtonPanel.setLayout(new FlowLayout());
-		printButton.addActionListener(this);
-		printButtonPanel.add(printButton);
-
-		finished = new JButton("Finished");
-		JPanel finishedPanel = new JPanel();
-		finishedPanel.setLayout(new FlowLayout());
-		finished.addActionListener(this);
-		finishedPanel.add(finished);
+		printButton = createButton("Print Report", listener);
+		finished = createButton("Finished", listener);
 
 		buttonPanel.add(printButton);
 		buttonPanel.add(finished);
@@ -93,28 +77,22 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 		win.setLocation(
 			((screenSize.width) / 2) - ((win.getSize().width) / 2),
 			((screenSize.height) / 2) - ((win.getSize().height) / 2));
-		win.show();
+		win.setVisible(true);
 
 	}
+	private JButton createButton(String text, EndGameReportClickEvent listener) {
+        JButton button = new JButton(text);
+        button.addActionListener(listener);
+        return button;
+    }
+	public void setCommand(ButtonCommand command) {
+        this.command = command;
+    }
+	public void buttonPressed() {
+        command.execute();
+    }
 
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(printButton)) {		
-			//Add selected to the vector.
-			retVal.add(selectedMember);
-		}
-		if (e.getSource().equals(finished)) {		
-			win.hide();
-			result = 1;
-		}
-
-	}
-
-	public void valueChanged(ListSelectionEvent e) {
-		selectedMember =
-			((String) ((JList) e.getSource()).getSelectedValue());
-	}
-
-	public Vector getResult() {
+	public Vector waitForResult() {
 		while ( result == 0 ) {
 			try {
 				Thread.sleep(10);
@@ -126,9 +104,20 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 	}
 	
 	public void destroy() {
-		win.hide();
+		win.setVisible(false);
 	}
-
+	public String getSelectMember() {
+		return selectedMember;
+	}
+	public void setResultNumber(int i) {
+		result = i;
+	}
+	public JFrame getWin(){
+		return win;
+	}
+	public Vector getretVal(){
+		return retVal;
+	}
 	public static void main( String args[] ) {
 		Vector bowlers = new Vector();
 		for ( int i=0; i<4; i++ ) {
@@ -138,6 +127,21 @@ public class EndGameReport implements ActionListener, ListSelectionListener {
 		String partyName="wank";
 		EndGameReport e = new EndGameReport( partyName, party );
 	}
+	public class EndGameReportClickEvent implements ActionListener, ListSelectionListener {
 	
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(printButton)) {		
+				setCommand(new PrintGameCommand(EndGameReport.this));
+			}
+			if (e.getSource().equals(finished)) {	
+				setCommand(new FinishedGameCommand(EndGameReport.this));	
+				
+			}
+			buttonPressed();
+		}
+		public void valueChanged(ListSelectionEvent e) {
+			selectedMember =
+				((String) ((JList) e.getSource()).getSelectedValue());
+		}
+	}
 }
-

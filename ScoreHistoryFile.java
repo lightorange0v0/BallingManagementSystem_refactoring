@@ -9,11 +9,11 @@
 import java.util.*;
 import java.io.*;
 
-public class ScoreHistoryFile {
+public class ScoreHistoryFile implements ScoreHistoryReader, ScoreHistoryWriter {
 
 	private static String SCOREHISTORY_DAT = "SCOREHISTORY.DAT";
 
-	public static void addScore(String nick, String date, String score)
+	public void addScore(String nick, String date, String score)
 		throws IOException, FileNotFoundException {
 
 		String data = nick + "\t" + date + "\t" + score + "\n";
@@ -24,7 +24,7 @@ public class ScoreHistoryFile {
 		out.close();
 	}
 
-	public static Vector getScores(String nick)
+	public Vector getScores(String nick)
 		throws IOException, FileNotFoundException {
 		Vector scores = new Vector();
 
@@ -41,5 +41,4 @@ public class ScoreHistoryFile {
 		}
 		return scores;
 	}
-
 }
