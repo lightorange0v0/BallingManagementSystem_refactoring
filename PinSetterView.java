@@ -85,7 +85,7 @@ public class PinSetterView implements PinsetterObserver {
 	createPanel(8, eightL);
 	createPanel(9, nineL);
 	createPanel(10, tenL);
-
+//
 	
 	//This Vector will keep references to the pin labels to show
 	//which ones have fallen.
