@@ -12,13 +12,13 @@ public class ScoreReport {
 	public ScoreReport( Bowler bowler, int[] scores, int games) {
 		String nick = bowler.getNick();
 		String full = bowler.getFullName();
-		Vector v = null;
+		Vector<Score> v = null;
 		ScoreHistoryFile shf = new ScoreHistoryFile();
 		try{
 			v = shf.getScores(nick);
 		} catch (Exception e){System.err.println("Error: " + e);}
 		
-		Iterator scoreIt = v.iterator();
+		Iterator<Score> scoreIt = v.iterator();
 		
 		content = "";
 		content += "--Lucky Strike Bowling Alley Score Report--\n";
