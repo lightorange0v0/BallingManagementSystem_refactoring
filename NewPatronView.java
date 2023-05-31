@@ -22,13 +22,14 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
+
 import java.util.*;
 import java.text.*;
 
-public class NewPatronView implements ActionListener {
-
+public class NewPatronView {
+	private static final int TEXT_FIELD_SIZE = 15;
 	private int maxSize;
-
+	private ButtonCommand command;
 	private JFrame win;
 	private JButton abort, finished;
 	private JLabel nickLabel, fullLabel, emailLabel;
@@ -57,30 +58,19 @@ public class NewPatronView implements ActionListener {
 		patronPanel.setLayout(new GridLayout(3, 1));
 		patronPanel.setBorder(new TitledBorder("Your Info"));
 
-		JPanel nickPanel = new JPanel();
-		nickPanel.setLayout(new FlowLayout());
-		nickLabel = new JLabel("Nick Name");
-		nickField = new JTextField("", 15);
-		nickPanel.add(nickLabel);
-		nickPanel.add(nickField);
+		nickField = new JTextField("", TEXT_FIELD_SIZE);
+        JPanel nickPanel = createFieldPanel("Nick Name", nickField);
 
-		JPanel fullPanel = new JPanel();
-		fullPanel.setLayout(new FlowLayout());
-		fullLabel = new JLabel("Full Name");
-		fullField = new JTextField("", 15);
-		fullPanel.add(fullLabel);
-		fullPanel.add(fullField);
+        fullField = new JTextField("", TEXT_FIELD_SIZE);
+        JPanel fullPanel = createFieldPanel("Full Name", fullField);
 
-		JPanel emailPanel = new JPanel();
-		emailPanel.setLayout(new FlowLayout());
-		emailLabel = new JLabel("E-Mail");
-		emailField = new JTextField("", 15);
-		emailPanel.add(emailLabel);
-		emailPanel.add(emailField);
+        emailField = new JTextField("", TEXT_FIELD_SIZE);
+        JPanel emailPanel = createFieldPanel("E-Mail", emailField);
 
-		patronPanel.add(nickPanel);
-		patronPanel.add(fullPanel);
-		patronPanel.add(emailPanel);
+        NewPatronViewClickEvent listener = new NewPatronViewClickEvent();
+        patronPanel.add(nickPanel);
+        patronPanel.add(fullPanel);
+        patronPanel.add(emailPanel);
 
 		// Button Panel
 		JPanel buttonPanel = new JPanel();
@@ -88,20 +78,11 @@ public class NewPatronView implements ActionListener {
 
 		Insets buttonMargin = new Insets(4, 4, 4, 4);
 
-		finished = new JButton("Add Patron");
-		JPanel finishedPanel = new JPanel();
-		finishedPanel.setLayout(new FlowLayout());
-		finished.addActionListener(this);
-		finishedPanel.add(finished);
+		finished = createButton("Add Patron", new JPanel(), listener);
+		abort = createButton("Abort", new JPanel(), listener);
 
-		abort = new JButton("Abort");
-		JPanel abortPanel = new JPanel();
-		abortPanel.setLayout(new FlowLayout());
-		abort.addActionListener(this);
-		abortPanel.add(abort);
-
-		buttonPanel.add(abortPanel);
-		buttonPanel.add(finishedPanel);
+		buttonPanel.add((JPanel) finished.getParent());
+		buttonPanel.add((JPanel) abort.getParent());
 
 		// Clean up main panel
 		colPanel.add(patronPanel, "Center");
@@ -116,41 +97,88 @@ public class NewPatronView implements ActionListener {
 		win.setLocation(
 			((screenSize.width) / 2) - ((win.getSize().width) / 2),
 			((screenSize.height) / 2) - ((win.getSize().height) / 2));
-		win.show();
+		win.setVisible(true);
 
 	}
-
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(abort)) {
-			done = true;
-			win.hide();
-		}
-
-		if (e.getSource().equals(finished)) {
-			nick = nickField.getText();
-			full = fullField.getText();
-			email = emailField.getText();
-			done = true;
-			addParty.updateNewPatron( this );
-			win.hide();
-		}
-
+	private JPanel createFieldPanel(String labelText, JTextField textField) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+        JLabel label = new JLabel(labelText);
+        panel.add(label);
+        panel.add(textField);
+        return panel;
+    }
+	private JButton createButton(String buttonText, JPanel panel, NewPatronViewClickEvent listener) { // 버튼 객체 생성 
+	    JButton button = new JButton(buttonText);
+	    button.addActionListener(listener);
+	    panel.setLayout(new FlowLayout());
+	    panel.add(button);
+	    return button;
 	}
-
+	public void setCommand(ButtonCommand command) {
+        this.command = command;
+    }
+	public void buttonPressed() {
+        command.execute();
+    }
 	public boolean done() {
 		return done;
 	}
-
+	public void setDone(boolean done) {
+		this.done = done;
+	}
 	public String getNick() {
 		return nick;
 	}
-
+	public void setNick(String nick) {
+		this.nick = nick;
+	}
 	public String getFull() {
 		return full;
 	}
-
+	public void setFull(String full) {
+		this.full = full;
+	}
 	public String getEmail() {
 		return email;
 	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public JFrame getWindow() {
+		return win;
+	}
+	public JTextField getNickField() {
+		return nickField;
+	}
+	public JTextField getFullField() {
+		return fullField;
+	}
+	public JTextField getEmailField() {
+		return emailField;
+	}
+	public AddPartyView getAddParty() {
+		return addParty;
+	}
+	public class NewPatronViewClickEvent implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(abort)) {
+				setCommand(new AbortNewPatronCommand(NewPatronView.this));
+			}
 
+			if (e.getSource().equals(finished)) {
+				nick = nickField.getText();
+				full = fullField.getText();
+				email = emailField.getText();
+				done = true;
+				if (nick.isEmpty() || full.isEmpty() || email.isEmpty()) {
+					// 예외 상황(아무 정보도 입력 안 한 상태)에 대해 사용자에게 메시지를 보여주는 코드 추가
+					JOptionPane.showMessageDialog(win, "All fields must be filled out.", "Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					setCommand(new FinishedNewPatronCommand(NewPatronView.this));
+				}
+			}
+			buttonPressed();
+		}
+	}
 }

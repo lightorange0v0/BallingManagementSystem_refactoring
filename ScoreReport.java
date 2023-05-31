@@ -9,8 +9,9 @@ import java.util.Iterator;
 public class ScoreReport {
 	private ScoreReportSender sender;
 	private String content;
-	public ScoreReport( Bowler bowler, int[] scores, int games) {
-		String nick = bowler.getNick();
+	
+	public ScoreReport( Bowler bowler, int[] scores, int games ) {
+		String nick = bowler.getNickName();
 		String full = bowler.getFullName();
 		Vector v = null;
 		ScoreHistoryFile shf = new ScoreHistoryFile();

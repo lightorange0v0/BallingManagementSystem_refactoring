@@ -22,11 +22,20 @@
 import java.util.*;
 import java.io.*;
 
-class BowlerFile {
+class BowlerFile implements BowlerDatabase {
 
 	/** The location of the bowelr database */
-	private static String BOWLER_DAT = "BOWLERS.DAT";
+	private static String BOWLER_DAT = "/Users/yeonjoo/Desktop/pattern_team/src/BOWLERS.DAT";
 
+	private BowlerFile() {}
+
+    private static class LazyHolder {
+        static final BowlerFile INSTANCE = new BowlerFile();
+    }
+
+    public static BowlerFile getInstance() {
+        return LazyHolder.INSTANCE;
+    }
     /**
      * Retrieves bowler information from the database and returns a Bowler objects with populated fields.
      *
@@ -35,28 +44,28 @@ class BowlerFile {
      * @return a Bowler object
      * 
      */
+	private static List<String[]> readBowlersFromFile() throws IOException {
+	    List<String[]> bowlers = new ArrayList<>();
 
-	public static Bowler getBowlerInfo(String nickName)
-		throws IOException, FileNotFoundException {
+	    try (BufferedReader in = new BufferedReader(new FileReader(BOWLER_DAT))) {
+	        String data;
+	        while ((data = in.readLine()) != null) {
+	            // File format is nick\tfname\te-mail
+	            String[] bowler = data.split("\t");
+	            bowlers.add(bowler);
+	        }
+	    }
 
-		BufferedReader in = new BufferedReader(new FileReader(BOWLER_DAT));
-		String data;
-		while ((data = in.readLine()) != null) {
-			// File format is nick\tfname\te-mail
-			String[] bowler = data.split("\t");
-			if (nickName.equals(bowler[0])) {
-				System.out.println(
-					"Nick: "
-						+ bowler[0]
-						+ " Full: "
-						+ bowler[1]
-						+ " email: "
-						+ bowler[2]);
-				return (new Bowler(bowler[0], bowler[1], bowler[2]));
-			}
-		}
-		System.out.println("Nick not found...");
-		return null;
+	    return bowlers;
+	}
+	@Override
+	public Bowler getBowlerInfo(String nickName) throws IOException {
+	    for (String[] bowler : readBowlersFromFile()) {
+	        if (nickName.equals(bowler[0])) {
+	            return new Bowler(bowler[0], bowler[1], bowler[2]);
+	        }
+	    }
+	    return null;
 	}
 
     /**
@@ -67,8 +76,8 @@ class BowlerFile {
      * @param email	the E-mail Address of the Bowler
      *
      */
-
-	public static void putBowlerInfo(
+	@Override
+	public void putBowlerInfo(
 		String nickName,
 		String fullName,
 		String email)
@@ -88,21 +97,13 @@ class BowlerFile {
      * @return a Vector of Strings
      * 
      */
-
-	public static Vector getBowlers()
-		throws IOException, FileNotFoundException {
-
-		Vector allBowlers = new Vector();
-
-		BufferedReader in = new BufferedReader(new FileReader(BOWLER_DAT));
-		String data;
-		while ((data = in.readLine()) != null) {
-			// File format is nick\tfname\te-mail
-			String[] bowler = data.split("\t");
-			//"Nick: bowler[0] Full: bowler[1] email: bowler[2]
-			allBowlers.add(bowler[0]);
-		}
-		return allBowlers;
+	@Override
+	public List<String> getBowlers() throws IOException {
+	    List<String> allBowlers = new ArrayList<>();
+	    for (String[] bowler : readBowlersFromFile()) {
+	        allBowlers.add(bowler[0]);
+	    }
+	    return allBowlers;
 	}
 
 }

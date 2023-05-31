@@ -252,7 +252,7 @@ public class Lane extends Thread implements PinsetterObserver {
 		try{
 			Date date = new Date();
 			String dateString = "" + date.getHours() + ":" + date.getMinutes() + " " + date.getMonth() + "/" + date.getDay() + "/" + (date.getYear() + 1900);
-			shf.addScore(currentThrower.getNick(), dateString, new Integer(cumulScores[bowlIndex][9]).toString());
+			shf.addScore(currentThrower.getNickName(), dateString, new Integer(cumulScores[bowlIndex][9]).toString());
 		} catch (Exception e) {System.err.println("Exception in addScore. "+ e );}
 	}
 
@@ -324,8 +324,8 @@ public class Lane extends Thread implements PinsetterObserver {
 	private void printScoreReportForMembers(Vector printVector, Bowler thisBowler, ScoreReport sr){ // 각 멤버 점수 보고서 출력
 		Iterator printIt = printVector.iterator();
 		while (printIt.hasNext()){
-			if (thisBowler.getNick() == (String)printIt.next()){
-				System.out.println("Printing " + thisBowler.getNick());
+			if (thisBowler.getNickName() == (String)printIt.next()){
+				System.out.println("Printing " + thisBowler.getNickName());
 				sr.setSender(new PrintReportSender());
 				sr.sendTo("Printer");
 			}
