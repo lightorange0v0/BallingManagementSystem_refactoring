@@ -39,22 +39,20 @@ import java.text.*;
  *  
  */
 
-public class AddPartyView implements ActionListener, ListSelectionListener {
-
+public class AddPartyView {
 	private int maxSize;
-
+	private ButtonCommand command;
 	private JFrame win;
 	private JButton addPatron, newPatron, remPatron, finished;
 	private JList partyList, allBowlers;
-	private Vector party, bowlerdb;
-	private Integer lock;
+	private Vector<String> party, bowlerdb;
 
 	private ControlDeskView controlDesk;
 
 	private String selectedNick, selectedMember;
 
 	public AddPartyView(ControlDeskView controlDesk, int max) {
-
+		
 		this.controlDesk = controlDesk;
 		maxSize = max;
 
@@ -70,14 +68,15 @@ public class AddPartyView implements ActionListener, ListSelectionListener {
 		partyPanel.setLayout(new FlowLayout());
 		partyPanel.setBorder(new TitledBorder("Your Party"));
 
-		party = new Vector();
-		Vector empty = new Vector();
+		party = new Vector<String>();
+		Vector<String> empty = new Vector<String>();
 		empty.add("(Empty)");
-
+		
+		AddPartyViewClickEvent listener = new AddPartyViewClickEvent();
 		partyList = new JList(empty);
 		partyList.setFixedCellWidth(120);
 		partyList.setVisibleRowCount(5);
-		partyList.addListSelectionListener(this);
+		partyList.addListSelectionListener(listener);
 		JScrollPane partyPane = new JScrollPane(partyList);
 		//        partyPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		partyPanel.add(partyPane);
@@ -88,10 +87,10 @@ public class AddPartyView implements ActionListener, ListSelectionListener {
 		bowlerPanel.setBorder(new TitledBorder("Bowler Database"));
 
 		try {
-			bowlerdb = new Vector(BowlerFile.getBowlers());
+			bowlerdb = new Vector<String>(BowlerFile.getInstance().getBowlers());
 		} catch (Exception e) {
 			System.err.println("File Error");
-			bowlerdb = new Vector();
+			bowlerdb = new Vector<String>();
 		}
 		allBowlers = new JList(bowlerdb);
 		allBowlers.setVisibleRowCount(8);
@@ -99,7 +98,7 @@ public class AddPartyView implements ActionListener, ListSelectionListener {
 		JScrollPane bowlerPane = new JScrollPane(allBowlers);
 		bowlerPane.setVerticalScrollBarPolicy(
 			JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		allBowlers.addListSelectionListener(this);
+		allBowlers.addListSelectionListener(listener);
 		bowlerPanel.add(bowlerPane);
 
 		// Button Panel
@@ -108,34 +107,15 @@ public class AddPartyView implements ActionListener, ListSelectionListener {
 
 		Insets buttonMargin = new Insets(4, 4, 4, 4);
 
-		addPatron = new JButton("Add to Party");
-		JPanel addPatronPanel = new JPanel();
-		addPatronPanel.setLayout(new FlowLayout());
-		addPatron.addActionListener(this);
-		addPatronPanel.add(addPatron);
+		addPatron = createButton("Add to Party", new JPanel(), listener);
+		remPatron = createButton("Remove Member", new JPanel(), listener);
+		newPatron = createButton("New Patron", new JPanel(), listener);
+		finished = createButton("Finished", new JPanel(), listener);
 
-		remPatron = new JButton("Remove Member");
-		JPanel remPatronPanel = new JPanel();
-		remPatronPanel.setLayout(new FlowLayout());
-		remPatron.addActionListener(this);
-		remPatronPanel.add(remPatron);
-
-		newPatron = new JButton("New Patron");
-		JPanel newPatronPanel = new JPanel();
-		newPatronPanel.setLayout(new FlowLayout());
-		newPatron.addActionListener(this);
-		newPatronPanel.add(newPatron);
-
-		finished = new JButton("Finished");
-		JPanel finishedPanel = new JPanel();
-		finishedPanel.setLayout(new FlowLayout());
-		finished.addActionListener(this);
-		finishedPanel.add(finished);
-
-		buttonPanel.add(addPatronPanel);
-		buttonPanel.add(remPatronPanel);
-		buttonPanel.add(newPatronPanel);
-		buttonPanel.add(finishedPanel);
+		buttonPanel.add((JPanel) addPatron.getParent());
+		buttonPanel.add((JPanel) remPatron.getParent());
+		buttonPanel.add((JPanel) newPatron.getParent());
+		buttonPanel.add((JPanel) finished.getParent());
 
 		// Clean up main panel
 		colPanel.add(partyPanel);
@@ -151,95 +131,106 @@ public class AddPartyView implements ActionListener, ListSelectionListener {
 		win.setLocation(
 			((screenSize.width) / 2) - ((win.getSize().width) / 2),
 			((screenSize.height) / 2) - ((win.getSize().height) / 2));
-		win.show();
+		win.setVisible(true);
 
 	}
+	private JButton createButton(String buttonText, JPanel panel, AddPartyViewClickEvent listener) { // 버튼 객체 생성 
+	    JButton button = new JButton(buttonText);
+	    button.addActionListener(listener);
+	    panel.setLayout(new FlowLayout());
+	    panel.add(button);
+	    return button;
+	}
+	public void setCommand(ButtonCommand command) {
+        this.command = command;
+    }
+	public void buttonPressed() {
+        command.execute();
+    }
+	public String getSelectedNick() {
+		return selectedNick;
+	}
+	public String getSelectedMember() {
+		return selectedMember;
+	}
+	public int getMaxSize() {
+		return maxSize;
+	}
+	public JList getPartyList() {
+		return partyList;
+	}
+	public JFrame getWindow() {
+		return win;
+	}
+	public ControlDeskView getControlDesk() {
+		return controlDesk;
+	}
+	/**
+	 * Accessor for Party
+	 */
 
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(addPatron)) {
-			if (selectedNick != null && party.size() < maxSize) {
-				if (party.contains(selectedNick)) {
-					System.err.println("Member already in Party");
-				} else {
-					party.add(selectedNick);
-					partyList.setListData(party);
+	public Vector<String> getParty() {
+		return party;
+	}
+	public class AddPartyViewClickEvent implements ActionListener, ListSelectionListener {
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(addPatron)) {
+				setCommand(new AddPatronCommand(AddPartyView.this));
+			}
+			if (e.getSource().equals(remPatron)) {
+				setCommand(new RemovePatronCommand(AddPartyView.this));
+			}
+			if (e.getSource().equals(newPatron)) {
+				setCommand(new NewPatronCommand(AddPartyView.this));
+			}
+			if (e.getSource().equals(finished)) {
+				setCommand(new FinishedAddPartyCommand(AddPartyView.this));
+			}
+			buttonPressed();
+		}
+		/**
+		 * Handler for List actions
+		 * @param e the ListActionEvent that triggered the handler
+		 */
+
+			public void valueChanged(ListSelectionEvent e) {
+				if (e.getSource().equals(allBowlers)) {
+					selectedNick =
+						((String) ((JList) e.getSource()).getSelectedValue());
+				}
+				if (e.getSource().equals(partyList)) {
+					selectedMember =
+						((String) ((JList) e.getSource()).getSelectedValue());
 				}
 			}
-		}
-		if (e.getSource().equals(remPatron)) {
-			if (selectedMember != null) {
-				party.removeElement(selectedMember);
-				partyList.setListData(party);
+
+		/**
+		 * Called by NewPatronView to notify AddPartyView to update
+		 * 
+		 * @param newPatron the NewPatronView that called this method
+		 */
+
+			public void updateNewPatron(NewPatronView newPatron) {
+				try {
+					Bowler checkBowler = BowlerFile.getInstance().getBowlerInfo( newPatron.getNick() );
+					if ( checkBowler == null ) {
+						BowlerFile.getInstance().putBowlerInfo(
+							newPatron.getNick(),
+							newPatron.getFull(),
+							newPatron.getEmail());
+						bowlerdb = new Vector<String>(BowlerFile.getInstance().getBowlers());
+						allBowlers.setListData(bowlerdb);
+						party.add(newPatron.getNick());
+						partyList.setListData(party);
+					} else {
+						String errMsg = "A Bowler with that name already exists.";
+						System.err.println(errMsg);
+						JOptionPane.showMessageDialog(win, errMsg, "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (Exception e2) {
+					System.err.println("File I/O Error");
+				}
 			}
-		}
-		if (e.getSource().equals(newPatron)) {
-			NewPatronView newPatron = new NewPatronView( this );
-		}
-		if (e.getSource().equals(finished)) {
-			if ( party != null && party.size() > 0) {
-				controlDesk.updateAddParty( this );
-			}
-			win.hide();
-		}
-
-	}
-
-/**
- * Handler for List actions
- * @param e the ListActionEvent that triggered the handler
- */
-
-	public void valueChanged(ListSelectionEvent e) {
-		if (e.getSource().equals(allBowlers)) {
-			selectedNick =
-				((String) ((JList) e.getSource()).getSelectedValue());
-		}
-		if (e.getSource().equals(partyList)) {
-			selectedMember =
-				((String) ((JList) e.getSource()).getSelectedValue());
-		}
-	}
-
-/**
- * Accessor for Party
- */
-
-	public Vector getNames() {
-		return party;
-	}
-
-/**
- * Called by NewPatronView to notify AddPartyView to update
- * 
- * @param newPatron the NewPatronView that called this method
- */
-
-	public void updateNewPatron(NewPatronView newPatron) {
-		try {
-			Bowler checkBowler = BowlerFile.getBowlerInfo( newPatron.getNick() );
-			if ( checkBowler == null ) {
-				BowlerFile.putBowlerInfo(
-					newPatron.getNick(),
-					newPatron.getFull(),
-					newPatron.getEmail());
-				bowlerdb = new Vector(BowlerFile.getBowlers());
-				allBowlers.setListData(bowlerdb);
-				party.add(newPatron.getNick());
-				partyList.setListData(party);
-			} else {
-				System.err.println( "A Bowler with that name already exists." );
-			}
-		} catch (Exception e2) {
-			System.err.println("File I/O Error");
-		}
-	}
-
-/**
- * Accessor for Party
- */
-
-	public Vector getParty() {
-		return party;
 	}
 
 }

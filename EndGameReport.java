@@ -45,7 +45,7 @@ public class EndGameReport {
 		Vector myVector = new Vector();
 		Iterator iter = (party.getMembers()).iterator();
 		while (iter.hasNext()){
-			myVector.add( ((Bowler)iter.next()).getNick() );
+			myVector.add( ((Bowler)iter.next()).getNickName() );
 		}	
 		EndGameReportClickEvent listener = new EndGameReportClickEvent();
 		memberList = new JList(myVector);
