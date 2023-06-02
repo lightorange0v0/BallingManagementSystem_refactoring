@@ -64,6 +64,7 @@ public class LaneStatusView implements LaneObserver, PinsetterObserver {
 		viewLane = createButton("View Lane", listener);
 		viewPinSetter = createButton("Pinsetter", listener);
 		maintenance = createButton("     ", listener);
+		maintenance.setBackground( Color.GREEN ); // !
 
 		viewLane.setEnabled( false );
 		viewPinSetter.setEnabled( false );
