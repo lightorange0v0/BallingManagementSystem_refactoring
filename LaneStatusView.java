@@ -60,9 +60,7 @@ public class LaneStatusView implements LaneObserver, PinsetterObserver {
 		// Button Panel
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout());
-
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
-
+		
 		viewLane = createButton("View Lane", listener);
 		viewPinSetter = createButton("Pinsetter", listener);
 		maintenance = createButton("     ", listener);
