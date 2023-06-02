@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 public interface LaneEventInterface extends java.rmi.Remote {
 	public int getFrameNum( ) throws java.rmi.RemoteException;
-	public HashMap getScore( ) throws java.rmi.RemoteException;
+	public HashMap<Bowler , int[]> getScore( ) throws java.rmi.RemoteException;
 	public int[] getCurScores( ) throws java.rmi.RemoteException;
 	public int getIndex() throws java.rmi.RemoteException;
 	public int getFrame() throws java.rmi.RemoteException;

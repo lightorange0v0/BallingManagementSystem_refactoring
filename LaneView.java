@@ -16,7 +16,7 @@ public class LaneView implements LaneObserver {
 
 	JFrame frame;
 	Container cpanel;
-	Vector bowlers;
+	Vector<Bowler> bowlers;
 	int cur;
 	Iterator bowlIt;
 
