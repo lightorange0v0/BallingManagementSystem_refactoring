@@ -204,7 +204,7 @@ public class LaneView implements LaneObserver {
 				new DefaultScoringStrategy());
 
 		for (int i = 0; i < 21; i++) {
-			int[] bowlerScores = ((HashMap<String, int[]>) le.getScore()).get(bowlers.get(k));
+			int[] bowlerScores = (le.getScore()).get(bowlers.get(k));
 			if (bowlerScores[i] != -1) {
 				for (ScoringStrategy strategy : strategies) { // 4가지 유형 중 하나임.
 					String scoreSymbol = strategy.getScoreSymbol(bowlerScores, i);
