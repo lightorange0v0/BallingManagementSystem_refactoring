@@ -87,7 +87,9 @@ class ControlDesk extends Thread {
 			
 			try {
 				sleep(SLEEPMS);
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
 		}
 	}
 		
