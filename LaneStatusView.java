@@ -18,15 +18,18 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 
 	private JLabel curBowler, foul, pinsDown;
 	private JButton viewLane;
-	private JButton viewPinSetter, maintenance;
+	private JButton viewPinSetter;
+	public JButton maintenance;
 
-	private PinSetterView psv;
-	private LaneView lv;
-	private Lane lane;
+	public PinSetterView psv;
+	public LaneView lv;
+	public Lane lane;
 	int laneNum;
 
 	boolean laneShowing;
 	boolean psShowing;
+	private ButtonCommand command;  // the Command instance for Command pattern
+
 
 	public LaneStatusView(Lane lane, int laneNum ) {
 
@@ -102,35 +105,29 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 	}
 
 	public void actionPerformed( ActionEvent e ) {
-		if ( lane.isPartyAssigned() ) { 
-			if (e.getSource().equals(viewPinSetter)) {
-				if ( psShowing == false ) {
-					psv.show();
-					psShowing=true;
-				} else if ( psShowing == true ) {
-					psv.hide();
-					psShowing=false;
-				}
-			}
+		if ( lane.isPartyAssigned() && e.getSource().equals(viewPinSetter)) {
+			setCommand(new LaneStatusViewPinSetterCommand(this));
 		}
-		if (e.getSource().equals(viewLane)) {
-			if ( lane.isPartyAssigned() ) { 
-				if ( laneShowing == false ) {
-					lv.show();
-					laneShowing=true;
-				} else if ( laneShowing == true ) {
-					lv.hide();
-					laneShowing=false;
-				}
-			}
+		else if (e.getSource().equals(viewLane)) {
+			setCommand(new LaneStatusViewLaneCommand(this));
 		}
-		if (e.getSource().equals(maintenance)) {
-			if ( lane.isPartyAssigned() ) {
-				lane.unPauseGame();
-				maintenance.setBackground( Color.GREEN );
-			}
+		else if (e.getSource().equals(maintenance)) {
+			setCommand(new LaneStatusMaintenanceCommand(this));
 		}
+		buttonPressed(); // 하나만 발생하도록 else if
+
 	}
+
+
+	// The Invoker holds a command and can use it to call a method
+	public void setCommand(ButtonCommand command) {
+		this.command = command;
+	}
+	// Call the execute() method of the command
+	public void buttonPressed() {
+		command.execute();
+	}
+
 
 	public void receiveLaneEvent(LaneEvent le) {
 		curBowler.setText( ( (Bowler)le.getBowler()).getNickName() );
