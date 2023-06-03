@@ -21,7 +21,7 @@ public class PartyQueueManager {
     public void addPartyQueue(Vector<String> partyNicks) {
         Vector<Bowler> partyBowlers = new Vector<>();
         for (String partyNick : partyNicks) {
-            Bowler newBowler = controlDesk.registerBowler(partyNick);
+            Bowler newBowler = controlDesk.registerPatron(partyNick);
             partyBowlers.add(newBowler);
         }
         Party newParty = new Party(partyBowlers);

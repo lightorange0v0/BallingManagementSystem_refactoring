@@ -101,15 +101,9 @@ class ControlDesk extends Thread {
      *
      */
 
-	private Bowler registerPatron(String nickName) {
+	public Bowler registerPatron(String nickName) {
 		return registrationManager.registerPatron(nickName);
 	}
-
-	//PartyQueueManager에서 사용하기 위한 public 메소드
-	public Bowler registerBowler(String nickName) {
-		return registerPatron(nickName);
-	}
-
 
     /**
      * Iterate through the available lanes and assign the paties in the wait queue if lanes are available.
