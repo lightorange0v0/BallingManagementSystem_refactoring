@@ -24,7 +24,7 @@ public class ControlDeskView implements ControlDeskObserver {
 
 	private JButton addParty, finished, assign;
 	private JFrame win;
-	private JList partyList;
+	private JList<String> partyList;
 	
 	/** The maximum  number of members in a party */
 	private int maxMembers;
@@ -91,7 +91,7 @@ public class ControlDeskView implements ControlDeskObserver {
 		Vector<String> empty = new Vector<>();
 		empty.add("(Empty)");
 
-		partyList = new JList(empty);
+		partyList = new JList<>(empty);
 		partyList.setFixedCellWidth(120);
 		partyList.setVisibleRowCount(10);
 		JScrollPane partyPane = new JScrollPane(partyList);

@@ -20,11 +20,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
-
-
-import java.util.*;
-import java.text.*;
 
 public class NewPatronView {
 	private static final int TEXT_FIELD_SIZE = 15;
@@ -75,8 +70,6 @@ public class NewPatronView {
 		// Button Panel
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(4, 1));
-
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
 
 		finished = createButton("Add Patron", new JPanel(), listener);
 		abort = createButton("Abort", new JPanel(), listener);

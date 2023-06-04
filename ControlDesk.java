@@ -41,7 +41,6 @@
  */
 
 import java.util.*;
-import java.io.*;
 
 class ControlDesk extends Thread {
 	private static final int SLEEPMS = 250;

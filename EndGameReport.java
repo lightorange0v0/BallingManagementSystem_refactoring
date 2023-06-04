@@ -122,9 +122,9 @@ public class EndGameReport {
 		for ( int i=0; i<4; i++ ) {
 			bowlers.add( new Bowler( "aaaaa", "aaaaa", "aaaaa" ) );
 		}
-		Party party = new Party( bowlers );
-		String partyName="wank";
-		EndGameReport e = new EndGameReport( partyName, party );
+		// Party party = new Party( bowlers );
+		// String partyName="wank";
+		// EndGameReport e = new EndGameReport( partyName, party );
 	}
 	public class EndGameReportClickEvent implements ActionListener, ListSelectionListener {
 	

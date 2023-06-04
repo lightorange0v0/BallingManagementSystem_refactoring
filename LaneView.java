@@ -18,7 +18,7 @@ public class LaneView implements LaneObserver {
 	Container cpanel;
 	Vector<Bowler> bowlers;
 	int cur;
-	Iterator bowlIt;
+	Iterator<Bowler> bowlIt;
 
 	JPanel[][] balls;
 	JLabel[][] ballLabel;
@@ -42,7 +42,7 @@ public class LaneView implements LaneObserver {
 
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				frame.hide();
+				frame.setVisible(false);
 			}
 		});
 
@@ -51,11 +51,11 @@ public class LaneView implements LaneObserver {
 	}
 
 	public void show() {
-		frame.show();
+		frame.setVisible(true);
 	}
 
 	public void hide() {
-		frame.hide();
+		frame.setVisible(false);
 	}
 
 	private JPanel makeFrame(Party party) {
@@ -190,8 +190,7 @@ public class LaneView implements LaneObserver {
 	private void updateCumlativeScores(int[][] lescores, int frameNum, int k){ // 누적 점수 업데이트 메소드
 		for (int i = 0; i <= frameNum - 1; i++) {
 			if (lescores[k][i] != 0)
-				scoreLabel[k][i].setText(
-						(new Integer(lescores[k][i])).toString());
+				scoreLabel[k][i].setText(String.valueOf(lescores[k][i]));
 		}
 	}
 
