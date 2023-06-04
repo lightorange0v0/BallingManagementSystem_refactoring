@@ -24,9 +24,9 @@ public class ScoreHistoryFile implements ScoreHistoryReader, ScoreHistoryWriter 
 		out.close();
 	}
 
-	public Vector getScores(String nick)
+	public Vector<Score> getScores(String nick)
 		throws IOException, FileNotFoundException {
-		Vector scores = new Vector();
+		Vector<Score> scores = new Vector<Score>();
 
 		BufferedReader in =
 			new BufferedReader(new FileReader(SCOREHISTORY_DAT));
