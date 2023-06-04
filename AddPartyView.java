@@ -172,13 +172,6 @@ public class AddPartyView {
 	public Vector<String> getParty() {
 		return party;
 	}
-	/**
-	 * Accessor for Party
-	 */
-
-	public Vector<String> getNames() {
-		return party;
-	}
 	public class AddPartyViewClickEvent implements ActionListener, ListSelectionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource().equals(addPatron)) {

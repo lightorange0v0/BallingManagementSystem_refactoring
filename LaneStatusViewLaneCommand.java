@@ -6,12 +6,12 @@ class LaneStatusViewLaneCommand implements ButtonCommand {
     }
 
     public void execute() {
-        if (theView.lane.isPartyAssigned()) {
+        if (theView.getLane().isPartyAssigned()) {
             if (theView.laneShowing == false) {
-                theView.lv.show();
+                theView.getLv().show();
                 theView.laneShowing = true;
             } else if (theView.laneShowing == true) {
-                theView.lv.hide();
+                theView.getLv().hide();
                 theView.laneShowing = false;
             }
         }

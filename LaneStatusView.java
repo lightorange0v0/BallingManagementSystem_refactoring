@@ -12,18 +12,17 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
-public class LaneStatusView implements ActionListener, LaneObserver, PinsetterObserver {
+public class LaneStatusView implements LaneObserver, PinsetterObserver {
 
 	private JPanel jp;
 
 	private JLabel curBowler, foul, pinsDown;
 	private JButton viewLane;
-	private JButton viewPinSetter;
-	public JButton maintenance;
+	private JButton viewPinSetter, maintenance;
 
-	public PinSetterView psv;
-	public LaneView lv;
-	public Lane lane;
+	private PinSetterView psv;
+	private LaneView lv;
+	private Lane lane;
 	int laneNum;
 
 	boolean laneShowing;
@@ -32,6 +31,8 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 
 
 	public LaneStatusView(Lane lane, int laneNum ) {
+
+		LaneStatusViewClickEvent listener = new LaneStatusViewClickEvent(); // view와 event 분리
 
 		this.lane = lane;
 		this.laneNum = laneNum;
@@ -59,35 +60,19 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 		// Button Panel
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout());
-
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
-
-		viewLane = new JButton("View Lane");
-		JPanel viewLanePanel = new JPanel();
-		viewLanePanel.setLayout(new FlowLayout());
-		viewLane.addActionListener(this);
-		viewLanePanel.add(viewLane);
-
-		viewPinSetter = new JButton("Pinsetter");
-		JPanel viewPinSetterPanel = new JPanel();
-		viewPinSetterPanel.setLayout(new FlowLayout());
-		viewPinSetter.addActionListener(this);
-		viewPinSetterPanel.add(viewPinSetter);
-
-		maintenance = new JButton("     ");
-		maintenance.setBackground( Color.GREEN );
-		JPanel maintenancePanel = new JPanel();
-		maintenancePanel.setLayout(new FlowLayout());
-		maintenance.addActionListener(this);
-		maintenancePanel.add(maintenance);
+		
+		viewLane = createButton("View Lane", listener);
+		viewPinSetter = createButton("Pinsetter", listener);
+		maintenance = createButton("     ", listener);
+		maintenance.setBackground( Color.GREEN ); // !
 
 		viewLane.setEnabled( false );
 		viewPinSetter.setEnabled( false );
 
 
-		buttonPanel.add(viewLanePanel);
-		buttonPanel.add(viewPinSetterPanel);
-		buttonPanel.add(maintenancePanel);
+		buttonPanel.add(viewLane);
+		buttonPanel.add(viewPinSetter);
+		buttonPanel.add(maintenance);
 
 		jp.add( cLabel );
 		jp.add( curBowler );
@@ -99,23 +84,30 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 		jp.add(buttonPanel);
 
 	}
+	private JButton createButton(String text, LaneStatusViewClickEvent listener) {
+		JButton button = new JButton(text);
+		button.addActionListener(listener);
+		return button;
+	}
 
 	public JPanel showLane() {
 		return jp;
 	}
 
-	public void actionPerformed( ActionEvent e ) {
-		if ( lane.isPartyAssigned() && e.getSource().equals(viewPinSetter)) {
-			setCommand(new LaneStatusViewPinSetterCommand(this));
-		}
-		else if (e.getSource().equals(viewLane)) {
-			setCommand(new LaneStatusViewLaneCommand(this));
-		}
-		else if (e.getSource().equals(maintenance)) {
-			setCommand(new LaneStatusMaintenanceCommand(this));
-		}
-		buttonPressed(); // 하나만 발생하도록 else if
+	public class LaneStatusViewClickEvent implements ActionListener{
+		public void actionPerformed( ActionEvent e ) {
+			if ( lane.isPartyAssigned() && e.getSource().equals(viewPinSetter)) {
+				setCommand(new LaneStatusViewPinSetterCommand(LaneStatusView.this));
+			}
+			else if (e.getSource().equals(viewLane)) {
+				setCommand(new LaneStatusViewLaneCommand(LaneStatusView.this));
+			}
+			else if (e.getSource().equals(maintenance)) {
+				setCommand(new LaneStatusMaintenanceCommand(LaneStatusView.this));
+			}
+			buttonPressed(); // 하나만 발생하도록 else if
 
+		}
 	}
 
 
@@ -147,6 +139,22 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 		pinsDown.setText( ( new Integer(pe.totalPinsDown()) ).toString() );
 //		foul.setText( ( new Boolean(pe.isFoulCommited()) ).toString() );
 		
+	}
+
+	public JButton getMaintenance() {
+		return maintenance;
+	}
+
+	public PinSetterView getPsv() {
+		return psv;
+	}
+
+	public LaneView getLv() {
+		return lv;
+	}
+
+	public Lane getLane() {
+		return lane;
 	}
 
 }

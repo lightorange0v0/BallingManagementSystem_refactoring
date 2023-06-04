@@ -22,7 +22,7 @@ public class BowlerRegistrationManager {
         try {
             // only one patron / nick.... no dupes, no checks
 
-            patron = BowlerFile.getBowlerInfo(nickName);
+            patron = BowlerFile.getInstance().getBowlerInfo(nickName);
 
         } catch (IOException e) {
             System.err.println("Error..." + e);

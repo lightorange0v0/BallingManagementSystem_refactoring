@@ -134,19 +134,24 @@
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.HashMap;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Lane extends Thread implements PinsetterObserver {	
+	final LaneState noPartyAssignedState,
+		partyAssignedState, gameInProgressState, decisionMakingState,
+		endOfGameState, pauseGameState;
+	private LaneState state;
 	private Party party;
 	private Pinsetter setter;
-	private HashMap scores;
-	private Vector subscribers;
+	private HashMap<Bowler , int[]> scores;
+	private Vector<LaneObserver> subscribers;
 
 	private boolean gameIsHalted;
 
 	private boolean partyAssigned;
 	private boolean gameFinished;
-	private Iterator bowlerIterator;
+	private Iterator<Bowler> bowlerIterator;
 	private int ball;
 	private int bowlIndex;
 	private int frameNumber;
@@ -161,6 +166,7 @@ public class Lane extends Thread implements PinsetterObserver {
 	private ScoreHistoryFile shf;
 	private Bowler currentThrower;			// = the thrower who just took a throw
 
+	private ScoringStrategy strategy; // 점수 계산 전략 패턴
 	/** Lane()
 	 * 
 	 * Constructs a new lane and starts its thread
@@ -170,9 +176,17 @@ public class Lane extends Thread implements PinsetterObserver {
 	 */
 	public Lane() { 
 		setter = new Pinsetter();
-		scores = new HashMap();
-		subscribers = new Vector();
+		scores = new HashMap<>();
+		subscribers = new Vector<>();
 		shf = new ScoreHistoryFile();
+
+		this.noPartyAssignedState = new NoPartyAssignedState();
+		this.partyAssignedState = new PartyAssignedState();
+		this.gameInProgressState = new GameInProgressState();
+		this.decisionMakingState = new DecisionMakingState();
+		this.endOfGameState = new EndOfGameState();
+		this.pauseGameState = new PauseGameState();
+		state = noPartyAssignedState;
 
 		gameIsHalted = false;
 		partyAssigned = false;
@@ -192,46 +206,21 @@ public class Lane extends Thread implements PinsetterObserver {
 		
 		// Long Method Refactoring
 		while (true) {
-			if(partyAssigned){ // we have a party on this lane,
-				// 동일한 적용인 점에서 분리
-				if(!gameFinished){ // so next bower can take a throw
-					handleGamePlay(); // 게임 시작을 핸들링하는 메소드
-				} else{
-					handleEndOfGame(); // 게임 종료를 핸들링하는 메소드
-				}
-			}
-
-			doSleep(10);
+			handleState();
+			//doSleep(10);
 		}
 	}
 
-	private void doSleep(int millis){ // 중복된 sleep()을 메소드로 변경
-		try{
-			sleep(millis);
-		} catch (Exception e) {}
-	}
+	public void setState(LaneState state) {
+        this.state = state;
+    }
 
-	private void handleGamePlay(){ // 게임 시작에 대한 메소드
-		gameDoSleep();
+	public void handleState() {
+        state.handle(this);
+    }
 
-		if (bowlerIterator.hasNext()) {
-			prepareNextThrow();
-			recordFinalScore();
-			resetThrow();
-		} else {
-			proceedToNextFrame();
-		}
-	}
-
-	private void gameDoSleep(){ // 게임 정지에 대한 sleep() 메소드
-		while(gameIsHalted){
-			doSleep(10);
-		}
-	}
-
-
-	private void prepareNextThrow(){ // 다음 볼이 던지도록 반복
-		currentThrower = (Bowler)bowlerIterator.next();
+	public void prepareNextThrow(){ // 다음 볼이 던지도록 반복
+		currentThrower = bowlerIterator.next();
 		canThrowAgain = true;
 		tenthFrameStrike = false;
 		ball = 0;
@@ -241,7 +230,7 @@ public class Lane extends Thread implements PinsetterObserver {
 		}
 	}
 
-	private void recordFinalScore(){ // 마지막 점수 저장
+	public void recordFinalScore(){ // 마지막 점수 저장
 		if (frameNumber == 9) {
 			finalScores[bowlIndex][gameNumber] = cumulScores[bowlIndex][9];
 			saveScore();
@@ -250,35 +239,32 @@ public class Lane extends Thread implements PinsetterObserver {
 
 	private void saveScore(){ // 현재 점수 저장
 		try{
-			Date date = new Date();
-			String dateString = "" + date.getHours() + ":" + date.getMinutes() + " " + date.getMonth() + "/" + date.getDay() + "/" + (date.getYear() + 1900);
-			shf.addScore(currentThrower.getNickName(), dateString, new Integer(cumulScores[bowlIndex][9]).toString());
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm MM/dd/yyyy");
+			LocalDateTime now = LocalDateTime.now();
+			String dateString = now.format(formatter);
+
+			shf.addScore(currentThrower.getNickName(), dateString, Integer.toString(cumulScores[bowlIndex][9]));
 		} catch (Exception e) {System.err.println("Exception in addScore. "+ e );}
 	}
 
-	private void resetThrow(){ // 다음 throw를 위해 모든 상태 초기화
+	public void resetThrow(){ // 다음 throw를 위해 모든 상태 초기화
 		setter.reset();
 		bowlIndex++;
 	}
 
-	private void proceedToNextFrame(){ // 다음 프레임을 위한 동작처리
+	public void proceedToNextFrame(){ // 다음 프레임을 위한 동작처리
 		frameNumber++;
 		resetBowlerIterator();
 		bowlIndex = 0;
 		if (frameNumber > 9) {
 			gameFinished = true;
 			gameNumber++;
+			setState(this.endOfGameState);
+			handleState();
 		}
 	}
 
-	private void handleEndOfGame(){ // 게임 종료에 대한 핸들링
-		int result = promptEndGame();
-		processEndGameResult(result);
-		// TODO: send record of scores to control desk
-	}
-
-
-	private int promptEndGame(){ // 게임 종료를 위한 응답 반영
+	public int promptEndGame(){ // 게임 종료를 위한 응답 반영
 		EndGamePrompt egp = new EndGamePrompt( ((Bowler) party.getMembers().get(0)).getNickName() + "'s Party" );
 		int result = egp.getResult();
 		egp.distroy();
@@ -286,22 +272,14 @@ public class Lane extends Thread implements PinsetterObserver {
 		System.out.println("result was: " + result);
 		return result;
 	}
-	private void processEndGameResult(int result){ // 재시작 혹은 체크 아웃 응답에 대한 분기
-		if (result == 1) {					// yes, want to play again
-			resetScores();
-			resetBowlerIterator();
 
-		} else if (result == 2) {// no, dont want to play another game
-			printEndGameReportAndNotifyMembers();
-		}
-	}
-
-	private void printEndGameReportAndNotifyMembers(){ // 점수 보고서 생성 및 출력
-		Vector printVector;
+	public void printEndGameReportAndNotifyMembers(){ // 점수 보고서 생성 및 출력
+		Vector<String> printVector;
 		EndGameReport egr = new EndGameReport( ((Bowler)party.getMembers().get(0)).getNickName() + "'s Party", party);
+		// TODO: (Bowler) 지우려면 party.getMember type 지정해야 함.
 		printVector = egr.waitForResult();
 		partyAssigned = false;
-		Iterator scoreIt = party.getMembers().iterator();
+		Iterator<Bowler> scoreIt = party.getMembers().iterator();
 		party = null;
 		partyAssigned = false;
 		publish(lanePublish());
@@ -309,10 +287,10 @@ public class Lane extends Thread implements PinsetterObserver {
 		sendScoreReports(printVector, scoreIt);
 	}
 
-	private void sendScoreReports(Vector printVector, Iterator scoreIt){ // 최종 점수 보고서 이메일 보내기와 출력
+	private void sendScoreReports(Vector<String> printVector, Iterator<Bowler> scoreIt){ // 최종 점수 보고서 이메일 보내기와 출력
 		int myIndex = 0;
 		while (scoreIt.hasNext()){
-			Bowler thisBowler = (Bowler)scoreIt.next();
+			Bowler thisBowler = scoreIt.next();
 			ScoreReport sr = new ScoreReport( thisBowler, finalScores[myIndex++], gameNumber );
 			sr.setSender(new EmailReportSender());
 			sr.sendTo(thisBowler.getEmail());
@@ -321,10 +299,10 @@ public class Lane extends Thread implements PinsetterObserver {
 		}
 	}
 
-	private void printScoreReportForMembers(Vector printVector, Bowler thisBowler, ScoreReport sr){ // 각 멤버 점수 보고서 출력
-		Iterator printIt = printVector.iterator();
+	private void printScoreReportForMembers(Vector<String> printVector, Bowler thisBowler, ScoreReport sr){ // 각 멤버 점수 보고서 출력
+		Iterator<String> printIt = printVector.iterator();
 		while (printIt.hasNext()){
-			if (thisBowler.getNickName() == (String)printIt.next()){
+			if (thisBowler.getNickName() == printIt.next()){
 				System.out.println("Printing " + thisBowler.getNickName());
 				sr.setSender(new PrintReportSender());
 				sr.sendTo("Printer");
@@ -387,7 +365,7 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * @pre the party as been assigned
 	 * @post the iterator points to the first bowler in the party
 	 */
-	private void resetBowlerIterator() {
+	public void resetBowlerIterator() {
 		bowlerIterator = (party.getMembers()).iterator();
 	}
 
@@ -398,8 +376,8 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * @pre the party has been assigned
 	 * @post scoring system is initialized
 	 */
-	private void resetScores() {
-		Iterator bowlIt = (party.getMembers()).iterator();
+	public void resetScores() {
+		Iterator<String> bowlIt = (party.getMembers()).iterator();
 
 		while ( bowlIt.hasNext() ) {
 			int[] toPut = new int[25];
@@ -408,9 +386,7 @@ public class Lane extends Thread implements PinsetterObserver {
 			}
 			scores.put( bowlIt.next(), toPut );
 		}
-		
-		
-		
+	
 		gameFinished = false;
 		frameNumber = 0;
 	}
@@ -450,7 +426,7 @@ public class Lane extends Thread implements PinsetterObserver {
 		int[] curScore;
 		int index =  ( (frame - 1) * 2 + ball);
 
-		curScore = (int[]) scores.get(Cur);
+		curScore = scores.get(Cur);
 
 	
 		curScore[ index - 1] = score;
@@ -479,109 +455,27 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * 
 	 * @return			The bowlers total score
 	 */
-	private int getScore( Bowler Cur, int frame) {
+	private int getScore( Bowler Cur, int frame) { // 전략 패턴 도입
 		int[] curScore;
-		int strikeballs = 0;
 		int totalScore = 0;
-		curScore = (int[]) scores.get(Cur);
+		curScore = scores.get(Cur);
 		for (int i = 0; i != 10; i++){
 			cumulScores[bowlIndex][i] = 0;
 		}
 		int current = 2*(frame - 1)+ball-1;
 		//Iterate through each ball until the current one.
-		for (int i = 0; i != current+2; i++){
-			//Spare:
-			if( i%2 == 1 && curScore[i - 1] + curScore[i] == 10 && i < current - 1 && i < 19){
-				//This ball was a the second of a spare.  
-				//Also, we're not on the current ball.
-				//Add the next ball to the ith one in cumul.
-				cumulScores[bowlIndex][(i/2)] += curScore[i+1] + curScore[i]; 
-				if (i > 1) {
-					//cumulScores[bowlIndex][i/2] += cumulScores[bowlIndex][i/2 -1];
-				}
-			} else if( i < current && i%2 == 0 && curScore[i] == 10  && i < 18){
-				strikeballs = 0;
-				//This ball is the first ball, and was a strike.
-				//If we can get 2 balls after it, good add them to cumul.
-				if (curScore[i+2] != -1) {
-					strikeballs = 1;
-					if(curScore[i+3] != -1) {
-						//Still got em.
-						strikeballs = 2;
-					} else if(curScore[i+4] != -1) {
-						//Ok, got it.
-						strikeballs = 2;
-					}
-				}
-				if (strikeballs == 2){
-					//Add up the strike.
-					//Add the next two balls to the current cumulscore.
-					cumulScores[bowlIndex][i/2] += 10;
-					if(curScore[i+1] != -1) {
-						cumulScores[bowlIndex][i/2] += curScore[i+1] + cumulScores[bowlIndex][(i/2)-1];
-						if (curScore[i+2] != -1){
-							if( curScore[i+2] != -2){
-								cumulScores[bowlIndex][(i/2)] += curScore[i+2];
-							}
-						} else {
-							if( curScore[i+3] != -2){
-								cumulScores[bowlIndex][(i/2)] += curScore[i+3];
-							}
-						}
-					} else {
-						if ( i/2 > 0 ){
-							cumulScores[bowlIndex][i/2] += curScore[i+2] + cumulScores[bowlIndex][(i/2)-1];
-						} else {
-							cumulScores[bowlIndex][i/2] += curScore[i+2];
-						}
-						if (curScore[i+3] != -1){
-							if( curScore[i+3] != -2){
-								cumulScores[bowlIndex][(i/2)] += curScore[i+3];
-							}
-						} else {
-							cumulScores[bowlIndex][(i/2)] += curScore[i+4];
-						}
-					}
-				} else {
-					break;
-				}
-			}else { 
-				//We're dealing with a normal throw, add it and be on our way.
-				if( i%2 == 0 && i < 18){
-					if ( i/2 == 0 ) {
-						//First frame, first ball.  Set his cumul score to the first ball
-						if(curScore[i] != -2){	
-							cumulScores[bowlIndex][i/2] += curScore[i];
-						}
-					} else if (i/2 != 9){
-						//add his last frame's cumul to this ball, make it this frame's cumul.
-						if(curScore[i] != -2){
-							cumulScores[bowlIndex][i/2] += cumulScores[bowlIndex][i/2 - 1] + curScore[i];
-						} else {
-							cumulScores[bowlIndex][i/2] += cumulScores[bowlIndex][i/2 - 1];
-						}	
-					}
-				} else if (i < 18){ 
-					if(curScore[i] != -1 && i > 2){
-						if(curScore[i] != -2){
-							cumulScores[bowlIndex][i/2] += curScore[i];
-						}
-					}
-				}
-				if (i/2 == 9){
-					if (i == 18){
-						cumulScores[bowlIndex][9] += cumulScores[bowlIndex][8];	
-					}
-					if(curScore[i] != -2){
-						cumulScores[bowlIndex][9] += curScore[i];
-					}
-				} else if (i/2 == 10) {
-					if(curScore[i] != -2){
-						cumulScores[bowlIndex][9] += curScore[i];
-					}
-				}
+
+		for (int i = 0; i != current+2; i++){ // spare, strike, normal 나누기
+			if (i%2 == 1 && curScore[i - 1] + curScore[i] == 10 && i < current - 1 && i < 19){
+				strategy = new SpareScoringStrategy();
+			} else if (i < current && i%2 == 0 && curScore[i] == 10  && i < 18){
+				strategy = new StrikeScoringStrategy();
+			} else {
+				strategy = new DefaultScoringStrategy();
 			}
-		}
+				strategy.computeScore(curScore, cumulScores, bowlIndex, current, i);
+
+			} 
 		return totalScore;
 	}
 
@@ -603,11 +497,18 @@ public class Lane extends Thread implements PinsetterObserver {
 		return gameFinished;
 	}
 
+	public boolean isGameHalted(){
+		return gameIsHalted;
+	}
+
+	public Iterator getBowlIterator(){
+		return bowlerIterator;
+	}
 	/** subscribe
 	 * 
 	 * Method that will add a subscriber
 	 * 
-	 * @param subscribe	Observer that is to be added
+	 * @param adding	Observer that is to be added
 	 */
 
 	public void subscribe( LaneObserver adding ) {
@@ -634,10 +535,10 @@ public class Lane extends Thread implements PinsetterObserver {
 
 	public void publish( LaneEvent event ) {
 		if( subscribers.size() > 0 ) {
-			Iterator eventIterator = subscribers.iterator();
+			Iterator<LaneObserver> eventIterator = subscribers.iterator();
 			
 			while ( eventIterator.hasNext() ) {
-				( (LaneObserver) eventIterator.next()).receiveLaneEvent( event );
+				( eventIterator.next()).receiveLaneEvent( event );
 			}
 		}
 	}
@@ -657,6 +558,8 @@ public class Lane extends Thread implements PinsetterObserver {
 	 */
 	public void pauseGame() {
 		gameIsHalted = true;
+		setState(pauseGameState);
+		handleState();
 		publish(lanePublish());
 	}
 	
