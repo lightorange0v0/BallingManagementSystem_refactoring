@@ -8,7 +8,7 @@ public class ExitProgramCommand implements ButtonCommand{
 
     @Override
     public void execute() {
-        theView.getWin().dispose();
+        theView.getWin().setVisible(false);
         System.exit(0);
     }
 }
