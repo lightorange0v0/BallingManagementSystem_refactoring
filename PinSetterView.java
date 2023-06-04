@@ -167,9 +167,6 @@ public class PinSetterView implements PinsetterObserver {
 	cpanel.add ( pins, BorderLayout.CENTER );
 	
 	frame.pack();
-	
-	
-//	frame.show();
     }
     
     
