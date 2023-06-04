@@ -12,8 +12,6 @@ public class EmailReportSender implements ScoreReportSender{
 				new BufferedWriter(
 					new OutputStreamWriter(s.getOutputStream(), "8859_1"));
 
-			String boundary = "DataSeparatorString";
-
 			// here you are supposed to send your username
 			sendln(in, out, "HELO world");
 			sendln(in, out, "MAIL FROM: <mda2376@rit.edu>");

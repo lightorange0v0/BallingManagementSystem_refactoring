@@ -19,9 +19,8 @@ public class EndGameReport {
 	private ButtonCommand command;
 	private JFrame win;
 	private JButton printButton, finished;
-	private JList memberList;
-	private Vector myVector;
-	private Vector retVal;
+	private JList<String> memberList;
+	private Vector<String> retVal;
 	private int result;
 
 	private String selectedMember;
@@ -29,7 +28,7 @@ public class EndGameReport {
 	public EndGameReport( String partyName, Party party ) {
 	
 		result =0;
-		retVal = new Vector();
+		retVal = new Vector<>();
 		win = new JFrame("End Game Report for " + partyName + "?" );
 		win.getContentPane().setLayout(new BorderLayout());
 		((JPanel) win.getContentPane()).setOpaque(false);
@@ -42,13 +41,13 @@ public class EndGameReport {
 		partyPanel.setLayout(new FlowLayout());
 		partyPanel.setBorder(new TitledBorder("Party Members"));
 		
-		Vector myVector = new Vector();
-		Iterator iter = (party.getMembers()).iterator();
+		Vector<String> myVector = new Vector<>();
+		Iterator<Bowler> iter = (party.getMembers()).iterator();
 		while (iter.hasNext()){
-			myVector.add( ((Bowler)iter.next()).getNickName() );
+		  myVector.add((iter.next()).getNickName() );
 		}	
 		EndGameReportClickEvent listener = new EndGameReportClickEvent();
-		memberList = new JList(myVector);
+		memberList = new JList<>(myVector);
 		memberList.setFixedCellWidth(120);
 		memberList.setVisibleRowCount(5);
 		memberList.addListSelectionListener(listener);
@@ -92,7 +91,7 @@ public class EndGameReport {
         command.execute();
     }
 
-	public Vector waitForResult() {
+	public Vector<String> waitForResult() {
 		while ( result == 0 ) {
 			try {
 				Thread.sleep(10);
@@ -115,17 +114,17 @@ public class EndGameReport {
 	public JFrame getWin(){
 		return win;
 	}
-	public Vector getretVal(){
+	public Vector<String> getretVal(){
 		return retVal;
 	}
 	public static void main( String args[] ) {
-		Vector bowlers = new Vector();
+		Vector<Bowler> bowlers = new Vector<>();
 		for ( int i=0; i<4; i++ ) {
 			bowlers.add( new Bowler( "aaaaa", "aaaaa", "aaaaa" ) );
 		}
-		Party party = new Party( bowlers );
-		String partyName="wank";
-		EndGameReport e = new EndGameReport( partyName, party );
+		// Party party = new Party( bowlers );
+		// String partyName="wank";
+		// EndGameReport e = new EndGameReport( partyName, party );
 	}
 	public class EndGameReportClickEvent implements ActionListener, ListSelectionListener {
 	
@@ -140,8 +139,11 @@ public class EndGameReport {
 			buttonPressed();
 		}
 		public void valueChanged(ListSelectionEvent e) {
-			selectedMember =
-				((String) ((JList) e.getSource()).getSelectedValue());
+			if (e.getSource() instanceof JList) {
+				JList<?> source = (JList<?>) e.getSource();
+				selectedMember = (String) source.getSelectedValue();
+			}
+			
 		}
 	}
 }

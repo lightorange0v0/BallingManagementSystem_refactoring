@@ -20,11 +20,11 @@ import javax.swing.border.*;
 
 import java.util.*;
 
-public class ControlDeskView implements ActionListener, ControlDeskObserver {
+public class ControlDeskView implements ControlDeskObserver {
 
 	private JButton addParty, finished, assign;
 	private JFrame win;
-	private JList partyList;
+	private JList<String> partyList;
 	
 	/** The maximum  number of members in a party */
 	private int maxMembers;
@@ -44,6 +44,8 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		this.maxMembers = maxMembers;
 		int numLanes = controlDesk.getNumLanes();
 
+		ControlDeskClickEvent listener = new ControlDeskClickEvent();
+
 		win = new JFrame("Control Desk");
 		win.getContentPane().setLayout(new BorderLayout());
 		((JPanel) win.getContentPane()).setOpaque(false);
@@ -55,16 +57,16 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		JPanel controlsPanel = createPanel("Controls", new GridLayout(3, 1));
 
 		JPanel addPartyPanel = new JPanel();
-		addParty = createButton("Add Party", addPartyPanel, this);
+		addParty = createButton("Add Party", addPartyPanel, listener);
 		controlsPanel.add(addPartyPanel);
 
 		JPanel assignPanel = new JPanel();
-		assign = createButton("Assign Lanes", assignPanel, this);
+		assign = createButton("Assign Lanes", assignPanel, listener);
 		assignPanel.add(assign);
 //		controlsPanel.add(assignPanel);
 
 		JPanel finishedPanel = new JPanel();
-		finished = createButton("Finished", finishedPanel, this);
+		finished = createButton("Finished", finishedPanel, listener);
 		controlsPanel.add(finishedPanel);
 
 		// Lane Status Panel
@@ -89,7 +91,7 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		Vector<String> empty = new Vector<>();
 		empty.add("(Empty)");
 
-		partyList = new JList(empty);
+		partyList = new JList<>(empty);
 		partyList.setFixedCellWidth(120);
 		partyList.setVisibleRowCount(10);
 		JScrollPane partyPane = new JScrollPane(partyList);
@@ -138,27 +140,6 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		return panel;
 	}
 
-	/**
-	 * Handler for actionEvents
-	 *
-	 * @param e	the ActionEvent that triggered the handler
-	 *
-	 */
-
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(addParty)) {
-			setCommand(new ControlDeskViewAddPartyCommand(this));
-		}
-		else if (e.getSource().equals(assign)) {
-			setCommand(new ControlDeskViewAssignCommand(this));
-		}
-		else if (e.getSource().equals(finished)) {
-			setCommand(new ExitProgramCommand(this));
-		}
-
-		buttonPressed();
-	}
-
 	// The Invoker holds a command and can use it to call a method
 	public void setCommand(ButtonCommand command) {
 		this.command = command;
@@ -200,5 +181,21 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 
 	public ControlDesk getControlDesk() {
 		return controlDesk;
+	}
+
+	public class ControlDeskClickEvent implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(addParty)) {
+				setCommand(new ControlDeskViewAddPartyCommand(ControlDeskView.this));
+			}
+			else if (e.getSource().equals(assign)) {
+				setCommand(new ControlDeskViewAssignCommand(ControlDeskView.this));
+			}
+			else if (e.getSource().equals(finished)) {
+				setCommand(new ExitProgramCommand(ControlDeskView.this));
+			}
+
+			buttonPressed();
+		}
 	}
 }

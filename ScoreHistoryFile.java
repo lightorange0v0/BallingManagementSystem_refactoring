@@ -11,7 +11,7 @@ import java.io.*;
 
 public class ScoreHistoryFile implements ScoreHistoryReader, ScoreHistoryWriter {
 
-	private static String SCOREHISTORY_DAT = "/Users/yeonjoo/Desktop/pattern_team/BallingManagementSystem_refactoring/SCOREHISTORY.DAT";
+	private static String SCOREHISTORY_DAT = "SCOREHISTORY.DAT";
 
 	public void addScore(String nick, String date, String score)
 		throws IOException, FileNotFoundException {
@@ -24,9 +24,9 @@ public class ScoreHistoryFile implements ScoreHistoryReader, ScoreHistoryWriter 
 		out.close();
 	}
 
-	public Vector getScores(String nick)
+	public Vector<Score> getScores(String nick)
 		throws IOException, FileNotFoundException {
-		Vector scores = new Vector();
+		Vector<Score> scores = new Vector<>();
 
 		BufferedReader in =
 			new BufferedReader(new FileReader(SCOREHISTORY_DAT));

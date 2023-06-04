@@ -32,7 +32,6 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 
 import java.util.*;
-import java.text.*;
 
 /**
  * Constructor for GUI used to Add Parties to the waiting party queue.
@@ -44,7 +43,7 @@ public class AddPartyView {
 	private ButtonCommand command;
 	private JFrame win;
 	private JButton addPatron, newPatron, remPatron, finished;
-	private JList partyList, allBowlers;
+	private JList<String> partyList, allBowlers;
 	private Vector<String> party, bowlerdb;
 
 	private ControlDeskView controlDesk;
@@ -73,7 +72,7 @@ public class AddPartyView {
 		empty.add("(Empty)");
 		
 		AddPartyViewClickEvent listener = new AddPartyViewClickEvent();
-		partyList = new JList(empty);
+		partyList = new JList<>(empty);
 		partyList.setFixedCellWidth(120);
 		partyList.setVisibleRowCount(5);
 		partyList.addListSelectionListener(listener);
@@ -92,7 +91,7 @@ public class AddPartyView {
 			System.err.println("File Error");
 			bowlerdb = new Vector<String>();
 		}
-		allBowlers = new JList(bowlerdb);
+		allBowlers = new JList<>(bowlerdb);
 		allBowlers.setVisibleRowCount(8);
 		allBowlers.setFixedCellWidth(120);
 		JScrollPane bowlerPane = new JScrollPane(allBowlers);
@@ -104,8 +103,6 @@ public class AddPartyView {
 		// Button Panel
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(4, 1));
-
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
 
 		addPatron = createButton("Add to Party", new JPanel(), listener);
 		remPatron = createButton("Remove Member", new JPanel(), listener);
@@ -156,7 +153,7 @@ public class AddPartyView {
 	public int getMaxSize() {
 		return maxSize;
 	}
-	public JList getPartyList() {
+	public JList<String> getPartyList() {
 		return partyList;
 	}
 	public JFrame getWindow() {
@@ -195,12 +192,16 @@ public class AddPartyView {
 
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getSource().equals(allBowlers)) {
-					selectedNick =
-						((String) ((JList) e.getSource()).getSelectedValue());
+						if (e.getSource() instanceof JList) {
+							JList<?> selectedNicks = (JList<?>) e.getSource();
+							selectedNick = (String) selectedNicks.getSelectedValue();
+						}
 				}
 				if (e.getSource().equals(partyList)) {
-					selectedMember =
-						((String) ((JList) e.getSource()).getSelectedValue());
+						if (e.getSource() instanceof JList) {
+							JList<?> source = (JList<?>) e.getSource();
+							selectedMember = (String) source.getSelectedValue();
+						}
 				}
 			}
 

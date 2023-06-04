@@ -8,9 +8,9 @@ class LaneStatusMaintenanceCommand implements ButtonCommand {
     }
 
     public void execute() {
-        if (theView.lane.isPartyAssigned()) {
-            theView.lane.unPauseGame();
-            theView.maintenance.setBackground(Color.GREEN);
+        if (theView.getLane().isPartyAssigned()) {
+            theView.getLane().unPauseGame();
+            theView.getMaintenance().setBackground(Color.GREEN);
         }
     }
 }

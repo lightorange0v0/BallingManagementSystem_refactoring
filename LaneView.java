@@ -9,16 +9,16 @@ import javax.swing.*;
 import java.util.*;
 import java.util.List;
 
-public class LaneView implements LaneObserver, ActionListener {
+public class LaneView implements LaneObserver {
 
 	private int roll;
 	private boolean initDone = true;
 
 	JFrame frame;
 	Container cpanel;
-	Vector bowlers;
+	Vector<Bowler> bowlers;
 	int cur;
-	Iterator bowlIt;
+	Iterator<Bowler> bowlIt;
 
 	JPanel[][] balls;
 	JLabel[][] ballLabel;
@@ -42,7 +42,7 @@ public class LaneView implements LaneObserver, ActionListener {
 
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				frame.hide();
+				frame.setVisible(false);
 			}
 		});
 
@@ -51,11 +51,11 @@ public class LaneView implements LaneObserver, ActionListener {
 	}
 
 	public void show() {
-		frame.show();
+		frame.setVisible(true);
 	}
 
 	public void hide() {
-		frame.hide();
+		frame.setVisible(false);
 	}
 
 	private JPanel makeFrame(Party party) {
@@ -154,6 +154,9 @@ public class LaneView implements LaneObserver, ActionListener {
 	}
 
 	private void setupFrame(LaneEvent le){ // 프레임을 초기화하는 메소드
+
+		LaneViewClickEvent listener = new LaneViewClickEvent();
+
 		System.out.println("Making the frame.");
 		cpanel.removeAll();
 		cpanel.add(makeFrame(le.getParty()), "Center");
@@ -162,19 +165,19 @@ public class LaneView implements LaneObserver, ActionListener {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout());
 
-		Insets buttonMargin = new Insets(4, 4, 4, 4);
+		maintenance = createButton("Maintenance Call", listener);
 
-		maintenance = new JButton("Maintenance Call");
-		JPanel maintenancePanel = new JPanel();
-		maintenancePanel.setLayout(new FlowLayout());
-		maintenance.addActionListener(this);
-		maintenancePanel.add(maintenance);
-
-		buttonPanel.add(maintenancePanel);
+		buttonPanel.add(maintenance);
 
 		cpanel.add(buttonPanel, "South");
 
 		frame.pack();
+	}
+
+	private JButton createButton(String text, LaneViewClickEvent listener) {
+		JButton button = new JButton(text);
+		button.addActionListener(listener);
+		return button;
 	}
 
 
@@ -187,8 +190,7 @@ public class LaneView implements LaneObserver, ActionListener {
 	private void updateCumlativeScores(int[][] lescores, int frameNum, int k){ // 누적 점수 업데이트 메소드
 		for (int i = 0; i <= frameNum - 1; i++) {
 			if (lescores[k][i] != 0)
-				scoreLabel[k][i].setText(
-						(new Integer(lescores[k][i])).toString());
+				scoreLabel[k][i].setText(String.valueOf(lescores[k][i]));
 		}
 	}
 
@@ -201,7 +203,7 @@ public class LaneView implements LaneObserver, ActionListener {
 				new DefaultScoringStrategy());
 
 		for (int i = 0; i < 21; i++) {
-			int[] bowlerScores = ((HashMap<String, int[]>) le.getScore()).get(bowlers.get(k));
+			int[] bowlerScores = (le.getScore()).get(bowlers.get(k));
 			if (bowlerScores[i] != -1) {
 				for (ScoringStrategy strategy : strategies) { // 4가지 유형 중 하나임.
 					String scoreSymbol = strategy.getScoreSymbol(bowlerScores, i);
@@ -215,11 +217,14 @@ public class LaneView implements LaneObserver, ActionListener {
 	}
 
 
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(maintenance)) {
-			setCommand(new LaneViewMaintenanceCommand(this));
+	public class LaneViewClickEvent implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(maintenance)) {
+				setCommand(new LaneViewMaintenanceCommand(LaneView.this));
+			}
+			buttonPressed();
 		}
-		buttonPressed();
+
 	}
 
 	// The Invoker holds a command and can use it to call a method

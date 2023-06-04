@@ -39,8 +39,6 @@ public class EndGamePrompt {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
 
-        Insets buttonMargin = new Insets(4, 4, 4, 4);
-
 		EndGamePromptClickEvent listener = new EndGamePromptClickEvent();
 
         yesButton = createButton("Yes", listener);

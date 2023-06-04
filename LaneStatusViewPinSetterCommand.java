@@ -7,10 +7,10 @@ class LaneStatusViewPinSetterCommand implements ButtonCommand {
 
     public void execute() {
         if (theView.psShowing == false) {
-            theView.psv.show();
+            theView.getPsv().show();
             theView.psShowing = true;
         } else if (theView.psShowing == true) {
-            theView.psv.hide();
+            theView.getPsv().hide();
             theView.psShowing = false;
         }
     }
