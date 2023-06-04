@@ -25,7 +25,7 @@ import java.io.*;
 class BowlerFile implements BowlerDatabase {
 
 	/** The location of the bowelr database */
-	private static String BOWLER_DAT = "/Users/yeonjoo/Desktop/pattern_team/BallingManagementSystem_refactoring/BOWLERS.DAT";
+	private static String BOWLER_DAT = "BOWLERS.DAT";
 
 	private BowlerFile() {}
 

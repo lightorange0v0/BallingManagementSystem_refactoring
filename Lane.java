@@ -275,8 +275,7 @@ public class Lane extends Thread implements PinsetterObserver {
 
 	public void printEndGameReportAndNotifyMembers(){ // 점수 보고서 생성 및 출력
 		Vector<String> printVector;
-		EndGameReport egr = new EndGameReport( ((Bowler)party.getMembers().get(0)).getNickName() + "'s Party", party);
-		// TODO: (Bowler) 지우려면 party.getMember type 지정해야 함.
+		EndGameReport egr = new EndGameReport((party.getMembers().get(0)).getNickName() + "'s Party", party);
 		printVector = egr.waitForResult();
 		partyAssigned = false;
 		Iterator<Bowler> scoreIt = party.getMembers().iterator();
@@ -377,7 +376,7 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * @post scoring system is initialized
 	 */
 	public void resetScores() {
-		Iterator<String> bowlIt = (party.getMembers()).iterator();
+		Iterator<Bowler> bowlIt = (party.getMembers()).iterator();
 
 		while ( bowlIt.hasNext() ) {
 			int[] toPut = new int[25];
@@ -455,9 +454,8 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * 
 	 * @return			The bowlers total score
 	 */
-	private int getScore( Bowler Cur, int frame) { // 전략 패턴 도입
+	private void getScore( Bowler Cur, int frame) { // 전략 패턴 도입
 		int[] curScore;
-		int totalScore = 0;
 		curScore = scores.get(Cur);
 		for (int i = 0; i != 10; i++){
 			cumulScores[bowlIndex][i] = 0;
@@ -474,9 +472,7 @@ public class Lane extends Thread implements PinsetterObserver {
 				strategy = new DefaultScoringStrategy();
 			}
 				strategy.computeScore(curScore, cumulScores, bowlIndex, current, i);
-
 			} 
-		return totalScore;
 	}
 
 	/** isPartyAssigned()
@@ -501,7 +497,7 @@ public class Lane extends Thread implements PinsetterObserver {
 		return gameIsHalted;
 	}
 
-	public Iterator getBowlIterator(){
+	public Iterator<Bowler> getBowlIterator(){
 		return bowlerIterator;
 	}
 	/** subscribe

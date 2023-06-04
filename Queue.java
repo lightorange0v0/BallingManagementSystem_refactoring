@@ -11,14 +11,14 @@
 import java.util.Vector;
  
 public class Queue {
-	private Vector v;
+	private Vector<Object> v;
 	
 	/** Queue()
 	 * 
 	 * creates a new queue
 	 */
 	public Queue() {
-		v = new Vector();
+		v = new Vector<>();
 	}
 	
 	public Object next() {
@@ -33,7 +33,7 @@ public class Queue {
 		return v.size() != 0;
 	}
 
-	public Vector asVector() {
+	public Vector<Object> asVector() {
 		return v;
 	}
 	

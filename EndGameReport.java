@@ -28,7 +28,7 @@ public class EndGameReport {
 	public EndGameReport( String partyName, Party party ) {
 	
 		result =0;
-		retVal = new Vector<String>();
+		retVal = new Vector<>();
 		win = new JFrame("End Game Report for " + partyName + "?" );
 		win.getContentPane().setLayout(new BorderLayout());
 		((JPanel) win.getContentPane()).setOpaque(false);
@@ -41,13 +41,13 @@ public class EndGameReport {
 		partyPanel.setLayout(new FlowLayout());
 		partyPanel.setBorder(new TitledBorder("Party Members"));
 		
-		Vector<String> myVector = new Vector<String>();
+		Vector<String> myVector = new Vector<>();
 		Iterator<Bowler> iter = (party.getMembers()).iterator();
 		while (iter.hasNext()){
 		  myVector.add((iter.next()).getNickName() );
 		}	
 		EndGameReportClickEvent listener = new EndGameReportClickEvent();
-		memberList = new JList<String>(myVector);
+		memberList = new JList<>(myVector);
 		memberList.setFixedCellWidth(120);
 		memberList.setVisibleRowCount(5);
 		memberList.addListSelectionListener(listener);
@@ -118,7 +118,7 @@ public class EndGameReport {
 		return retVal;
 	}
 	public static void main( String args[] ) {
-		Vector<Bowler> bowlers = new Vector<Bowler>();
+		Vector<Bowler> bowlers = new Vector<>();
 		for ( int i=0; i<4; i++ ) {
 			bowlers.add( new Bowler( "aaaaa", "aaaaa", "aaaaa" ) );
 		}
